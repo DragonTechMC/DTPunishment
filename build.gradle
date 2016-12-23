@@ -1,0 +1,33 @@
+plugins {
+    id 'org.spongepowered.plugin' version '0.7'
+    id "com.qixalite.spongestart" version "1.5.2"
+    id "java"
+}
+
+group = pluginGroup
+version = pluginVersion
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://repo.spongepowered.org/maven/'
+    }
+}
+
+spongestart{
+    eula true
+
+    //optional configs
+    spongeVanillaBuild '1.10.2-5.1.0-BETA-355'
+    spongeForgeBuild '1.10.2-2098-5.0.0-BETA-1808'
+    forgeServerFolder 'run/forge'
+    vanillaServerFolder 'run/vanilla'
+}
+
+dependencies {
+    compile 'org.spongepowered:spongeapi:5.0.0'
+}
+
+sponge.plugin.id = pluginId
