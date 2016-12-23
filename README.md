@@ -36,9 +36,9 @@ Mutepoints: amount
 
 
 
-###Automatic Punishment
+###Automatic Punishment  
 
-Banpoints : Punishment time
+Banpoints : Punishment time  
 10 : 1d  
 20 : 2d  
 30 : 3d  
@@ -51,7 +51,7 @@ Banpoints : Punishment time
 100 : 24w  
 
 
-Mutepoints : Punishment time
+Mutepoints : Punishment time  
 5 : 5m  
 10: 10m  
 20 : 30m  
