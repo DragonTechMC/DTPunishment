@@ -45,9 +45,16 @@ public class DTPunishment {
         return privateConfigDir;
     }
 
+    public Path getDefaultConfig(){
+        return defaultConfig;
+    }
 
     public Logger getLogger() {
         return logger;
+    }
+
+    public ConfigurationLoader<CommentedConfigurationNode> getConfigManager(){
+        return configManager;
     }
 
 
@@ -55,13 +62,22 @@ public class DTPunishment {
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         getLogger().info("Hello world!");
-
         ConfigurationManager config = new ConfigurationManager(this);
         config.init();
-
+        config.generateConfig();
         Sponge.getEventManager().registerListeners(this, new PlayerListener(this));
         registerCommand();
     }
+
+
+
+
+
+
+
+
+
+
 
 
     public void registerCommand(){

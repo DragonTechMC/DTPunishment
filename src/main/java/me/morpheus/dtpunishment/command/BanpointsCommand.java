@@ -1,6 +1,7 @@
 package me.morpheus.dtpunishment.command;
 
 import me.morpheus.dtpunishment.DTPunishment;
+import me.morpheus.dtpunishment.PunishmentManager;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -76,15 +77,18 @@ public class BanpointsCommand implements CommandExecutor {
                     main.getLogger().info(added + actual + "");
                     rootNode.getNode("points", "banpoints").setValue(added + actual);
                     loader.save(rootNode);
+                    PunishmentManager punishment = new PunishmentManager(main);
+                    punishment.check(args.getOne("player").get().toString(), "banpoints", rootNode.getNode("points", "banpoints").getInt());
                 } catch(IOException e) {
                     e.printStackTrace();
                 }
 
 
+
             }else if(args.getOne("player").isPresent()){
                 ConfigurationLoader<CommentedConfigurationNode> loader =
                         HoconConfigurationLoader.builder().setPath(playerData).build();
-                ConfigurationNode rootNode;
+                 ConfigurationNode rootNode;
                 try {
                     rootNode = loader.load();
                     int amount = rootNode.getNode("points", "banpoints").getInt();
@@ -106,9 +110,6 @@ public class BanpointsCommand implements CommandExecutor {
 
 
 
-
-
-        src.sendMessage(Text.of("Hello World!"));
         return CommandResult.success();
     }
 }
