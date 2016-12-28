@@ -53,9 +53,7 @@ public class DTPunishment {
         return logger;
     }
 
-    public ConfigurationLoader<CommentedConfigurationNode> getConfigManager(){
-        return configManager;
-    }
+
 
 
 

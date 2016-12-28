@@ -8,6 +8,8 @@ import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.filter.cause.Root;
+import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -17,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.Optional;
 
 public class PlayerListener {
@@ -47,6 +50,7 @@ public class PlayerListener {
                     ConfigurationNode rootNode = loader.createEmptyNode(ConfigurationOptions.defaults());
                     rootNode.getNode("points", "banpoints").setValue(0);
                     rootNode.getNode("points", "mutepoints").setValue(0);
+                    rootNode.getNode("mute", "isMuted").setValue(false);
                     loader.save(rootNode);
                 } catch (IOException e) {
                     main.getLogger().info("Error while creating player file");
@@ -55,4 +59,44 @@ public class PlayerListener {
             }
         }
     }
+
+    @Listener
+    public void onPlayerChat(MessageChannelEvent.Chat event, @Root Player player){
+
+        Path playerData = Paths.get(main.getConfigPath() + "/data/" + player.getName() + ".conf");
+        ConfigurationLoader<CommentedConfigurationNode> loader =
+                HoconConfigurationLoader.builder().setPath(playerData).build();
+        ConfigurationNode rootNode = null;
+
+        boolean isMuted = false;
+        try {
+            rootNode = loader.load();
+            isMuted = rootNode.getNode("mute", "isMuted").getBoolean();
+
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+        if(isMuted){
+            Instant expiration = Instant.parse(rootNode.getNode("mute", "until").getString());
+
+            if(Instant.now().isAfter(expiration)){
+                try {
+
+                    rootNode.getNode("mute", "isMuted").setValue(false);
+                    rootNode.getNode("mute").removeChild("until");
+
+                    loader.save(rootNode);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }else {
+                main.getLogger().info("[Message cancelled] - " + event.getMessage().toPlain());
+                event.setCancelled(true);
+            }
+        }
+
+
+    }
+
+
 }

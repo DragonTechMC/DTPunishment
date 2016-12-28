@@ -39,7 +39,6 @@ public class BanpointsCommand implements CommandExecutor {
 
         }else{
 
-            main.getLogger().info(args.getOne("player").toString());
             String name;
             Optional<Player> player = null;
 
@@ -74,11 +73,10 @@ public class BanpointsCommand implements CommandExecutor {
                     rootNode = loader.load();
                     int added = args.<Integer>getOne("amount").get();
                     int actual = rootNode.getNode("points", "banpoints").getInt();
-                    main.getLogger().info(added + actual + "");
                     rootNode.getNode("points", "banpoints").setValue(added + actual);
                     loader.save(rootNode);
                     PunishmentManager punishment = new PunishmentManager(main);
-                    punishment.check(args.getOne("player").get().toString(), "banpoints", rootNode.getNode("points", "banpoints").getInt());
+                    punishment.checkPenalty(args.getOne("player").get().toString(), "banpoints", rootNode.getNode("points", "banpoints").getInt());
                 } catch(IOException e) {
                     e.printStackTrace();
                 }

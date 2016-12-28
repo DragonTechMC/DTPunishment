@@ -31,7 +31,6 @@ public class PlayerInfoCommand implements CommandExecutor {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         if (!args.hasAny("player")) {
-            src.sendMessage(Text.of("no arguments your info"));
             Path playerData = Paths.get(main.getConfigPath() + "/data/" + src.getName() + ".conf");
             ConfigurationLoader<CommentedConfigurationNode> loader =
                     HoconConfigurationLoader.builder().setPath(playerData).build();
@@ -41,8 +40,6 @@ public class PlayerInfoCommand implements CommandExecutor {
                 rootNode = loader.load();
                 int mute = rootNode.getNode("points", "mutepoints").getInt();
                 int ban = rootNode.getNode("points", "banpoints").getInt();
-                main.getLogger().info("Mute : " + mute);
-                main.getLogger().info("Ban : " + ban);
 
                 src.sendMessage(Text.of("Your info"));
                 src.sendMessage(Text.of("Player : " + src.getName()));
@@ -54,7 +51,6 @@ public class PlayerInfoCommand implements CommandExecutor {
 
         } else {
 
-            main.getLogger().info(args.getOne("player").toString());
             String name;
             Optional<Player> player = Sponge.getServer().getPlayer(args.getOne("player").get().toString());
 
@@ -84,8 +80,6 @@ public class PlayerInfoCommand implements CommandExecutor {
                     rootNode = loader.load();
                     int mute = rootNode.getNode("points", "mutepoints").getInt();
                     int ban = rootNode.getNode("points", "banpoints").getInt();
-                    main.getLogger().info("Mute : " + mute);
-                    main.getLogger().info("Ban : " + ban);
 
                     src.sendMessage(Text.of("Player : " + args.getOne("player").get().toString()));
                     src.sendMessage(Text.of("Mute : " + mute));
@@ -99,7 +93,6 @@ public class PlayerInfoCommand implements CommandExecutor {
 
         }
 
-        src.sendMessage(Text.of("Hello World!"));
         return CommandResult.success();
     }
 

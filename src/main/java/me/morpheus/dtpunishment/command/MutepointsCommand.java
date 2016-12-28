@@ -1,6 +1,7 @@
 package me.morpheus.dtpunishment.command;
 
 import me.morpheus.dtpunishment.DTPunishment;
+import me.morpheus.dtpunishment.PunishmentManager;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -25,7 +26,6 @@ public class MutepointsCommand implements CommandExecutor {
 
     public MutepointsCommand(DTPunishment main){
         this.main = main;
-
     }
 
 
@@ -37,7 +37,6 @@ public class MutepointsCommand implements CommandExecutor {
 
         }else{
 
-            main.getLogger().info(args.getOne("player").toString());
             String name;
             Optional<Player> player = Sponge.getServer().getPlayer(args.getOne("player").get().toString());
 
@@ -65,9 +64,12 @@ public class MutepointsCommand implements CommandExecutor {
                     rootNode = loader.load();
                     int added = args.<Integer>getOne("amount").get();
                     int actual = rootNode.getNode("points", "mutepoints").getInt();
-                    main.getLogger().info(added + actual + "");
                     rootNode.getNode("points", "mutepoints").setValue(added + actual);
                     loader.save(rootNode);
+                    PunishmentManager punishment = new PunishmentManager(main);
+                    punishment.checkPenalty(args.getOne("player").get().toString(), "mutepoints",
+                            rootNode.getNode("points", "mutepoints").getInt());
+
                 } catch(IOException e) {
                     e.printStackTrace();
                 }
@@ -96,9 +98,6 @@ public class MutepointsCommand implements CommandExecutor {
 
 
 
-
-
-        src.sendMessage(Text.of("Hello World!"));
         return CommandResult.success();
     }
 }
