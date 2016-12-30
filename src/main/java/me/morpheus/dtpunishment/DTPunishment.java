@@ -19,6 +19,7 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 
 import java.nio.file.Path;
+import java.sql.SQLException;
 
 @Plugin(
         id = "dtpunishment",
@@ -55,16 +56,22 @@ public class DTPunishment {
 
 
 
-
-
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         getLogger().info("Hello world!");
+        getLogger().info("If you don't refactor me, I'm gonna kill myself");
         ConfigurationManager config = new ConfigurationManager(this);
-        config.init();
         config.generateConfig();
+        try {
+            config.init();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         Sponge.getEventManager().registerListeners(this, new PlayerListener(this));
         registerCommand();
+
+
+
     }
 
 

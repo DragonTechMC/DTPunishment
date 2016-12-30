@@ -1,5 +1,7 @@
 package me.morpheus.dtpunishment.command;
 
+import me.morpheus.dtpunishment.ConfigUtil;
+import me.morpheus.dtpunishment.DBUtils;
 import me.morpheus.dtpunishment.DTPunishment;
 import me.morpheus.dtpunishment.PunishmentManager;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -64,37 +66,46 @@ public class BanpointsCommand implements CommandExecutor {
             Path playerData = Paths.get(main.getConfigPath() + "/data/" + name + ".conf");
 
             if(args.getOne("player").isPresent() && args.<Integer>getOne("amount").isPresent()){
+                PunishmentManager punishment = new PunishmentManager(main);
+                int added = args.<Integer>getOne("amount").get();
 
+                if(ConfigUtil.DB_ENABLED) {
+                    DBUtils.addBanpoints(player.get().getName(), added);
+                    punishment.checkPenalty(player.get().getName(), "banpoints", DBUtils.getBanpoints(player.get().getName()));
+                }else {
 
-                ConfigurationLoader<CommentedConfigurationNode> loader =
-                        HoconConfigurationLoader.builder().setPath(playerData).build();
-                ConfigurationNode rootNode;
-                try {
-                    rootNode = loader.load();
-                    int added = args.<Integer>getOne("amount").get();
-                    int actual = rootNode.getNode("points", "banpoints").getInt();
-                    rootNode.getNode("points", "banpoints").setValue(added + actual);
-                    loader.save(rootNode);
-                    PunishmentManager punishment = new PunishmentManager(main);
-                    punishment.checkPenalty(args.getOne("player").get().toString(), "banpoints", rootNode.getNode("points", "banpoints").getInt());
-                } catch(IOException e) {
-                    e.printStackTrace();
+                    ConfigurationLoader<CommentedConfigurationNode> loader =
+                            HoconConfigurationLoader.builder().setPath(playerData).build();
+                    ConfigurationNode rootNode;
+                    try {
+                        rootNode = loader.load();
+
+                        int actual = rootNode.getNode("points", "banpoints").getInt();
+                        rootNode.getNode("points", "banpoints").setValue(added + actual);
+                        loader.save(rootNode);
+
+                        punishment.checkPenalty(args.getOne("player").get().toString(), "banpoints", rootNode.getNode("points", "banpoints").getInt());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-
 
 
             }else if(args.getOne("player").isPresent()){
-                ConfigurationLoader<CommentedConfigurationNode> loader =
-                        HoconConfigurationLoader.builder().setPath(playerData).build();
-                 ConfigurationNode rootNode;
-                try {
-                    rootNode = loader.load();
-                    int amount = rootNode.getNode("points", "banpoints").getInt();
-                    src.sendMessage(Text.of(name + " has " + amount + " banpoints"));
-                } catch(IOException e) {
-                    e.printStackTrace();
+                if(ConfigUtil.DB_ENABLED) {
+                    src.sendMessage(Text.of(name + " has " + DBUtils.getBanpoints(name) + " banpoints"));
+                }else {
+                    ConfigurationLoader<CommentedConfigurationNode> loader =
+                            HoconConfigurationLoader.builder().setPath(playerData).build();
+                    ConfigurationNode rootNode;
+                    try {
+                        rootNode = loader.load();
+                        int amount = rootNode.getNode("points", "banpoints").getInt();
+                        src.sendMessage(Text.of(name + " has " + amount + " banpoints"));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-
 
 
 

@@ -1,5 +1,7 @@
 package me.morpheus.dtpunishment.command;
 
+import me.morpheus.dtpunishment.ConfigUtil;
+import me.morpheus.dtpunishment.DBUtils;
 import me.morpheus.dtpunishment.DTPunishment;
 import me.morpheus.dtpunishment.PunishmentManager;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -56,35 +58,46 @@ public class MutepointsCommand implements CommandExecutor {
 
             if(args.getOne("player").isPresent() && args.<Integer>getOne("amount").isPresent()){
 
+                PunishmentManager punishment = new PunishmentManager(main);
+                int added = args.<Integer>getOne("amount").get();
 
-                ConfigurationLoader<CommentedConfigurationNode> loader =
-                        HoconConfigurationLoader.builder().setPath(playerData).build();
-                ConfigurationNode rootNode;
-                try {
-                    rootNode = loader.load();
-                    int added = args.<Integer>getOne("amount").get();
-                    int actual = rootNode.getNode("points", "mutepoints").getInt();
-                    rootNode.getNode("points", "mutepoints").setValue(added + actual);
-                    loader.save(rootNode);
-                    PunishmentManager punishment = new PunishmentManager(main);
-                    punishment.checkPenalty(args.getOne("player").get().toString(), "mutepoints",
-                            rootNode.getNode("points", "mutepoints").getInt());
+                if(ConfigUtil.DB_ENABLED) {
+                    DBUtils.addMutepoints(player.get().getName(), added);
+                    punishment.checkPenalty(player.get().getName(), "mutepoints", DBUtils.getMutepoints(player.get().getName()));
+                }else {
 
-                } catch(IOException e) {
-                    e.printStackTrace();
+                    ConfigurationLoader<CommentedConfigurationNode> loader =
+                            HoconConfigurationLoader.builder().setPath(playerData).build();
+                    ConfigurationNode rootNode;
+                    try {
+                        rootNode = loader.load();
+                        int actual = rootNode.getNode("points", "mutepoints").getInt();
+                        rootNode.getNode("points", "mutepoints").setValue(added + actual);
+                        loader.save(rootNode);
+                        punishment.checkPenalty(args.getOne("player").get().toString(), "mutepoints",
+                                rootNode.getNode("points", "mutepoints").getInt());
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
 
             }else if(args.getOne("player").isPresent()){
-                ConfigurationLoader<CommentedConfigurationNode> loader =
-                        HoconConfigurationLoader.builder().setPath(playerData).build();
-                ConfigurationNode rootNode;
-                try {
-                    rootNode = loader.load();
-                    int amount = rootNode.getNode("points", "mutepoints").getInt();
-                    src.sendMessage(Text.of(name + " has " + amount + " mutepoints"));
-                } catch(IOException e) {
-                    e.printStackTrace();
+                if(ConfigUtil.DB_ENABLED) {
+                    src.sendMessage(Text.of(name + " has " + DBUtils.getMutepoints(name) + " mutepoints"));
+                }else {
+
+                    ConfigurationLoader<CommentedConfigurationNode> loader =
+                            HoconConfigurationLoader.builder().setPath(playerData).build();
+                    ConfigurationNode rootNode;
+                    try {
+                        rootNode = loader.load();
+                        int amount = rootNode.getNode("points", "mutepoints").getInt();
+                        src.sendMessage(Text.of(name + " has " + amount + " mutepoints"));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
 

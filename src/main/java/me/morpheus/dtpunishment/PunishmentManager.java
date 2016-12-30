@@ -73,17 +73,20 @@ public class PunishmentManager {
 
                 service.addBan(ban);
 
-                Path playerData = Paths.get(main.getConfigPath() + "/data/" + p + ".conf");
+                if(ConfigUtil.DB_ENABLED) {
+                    DBUtils.addBanpoints(p, -rounded);
+                }else {
+                    Path playerData = Paths.get(main.getConfigPath() + "/data/" + p + ".conf");
 
-                ConfigurationLoader<CommentedConfigurationNode> playerLoader =
-                        HoconConfigurationLoader.builder().setPath(playerData).build();
-                ConfigurationNode playerNode = playerLoader.load();
-                int actual = playerNode.getNode("points", "banpoints").getInt();
+                    ConfigurationLoader<CommentedConfigurationNode> playerLoader =
+                            HoconConfigurationLoader.builder().setPath(playerData).build();
+                    ConfigurationNode playerNode = playerLoader.load();
+                    int actual = playerNode.getNode("points", "banpoints").getInt();
 
-                playerNode.getNode("points", "banpoints").setValue(actual - rounded);
-                playerLoader.save(playerNode);
+                    playerNode.getNode("points", "banpoints").setValue(actual - rounded);
+                    playerLoader.save(playerNode);
 
-
+                }
 
                 player.kick(Text.of(TextColors.AQUA, TextStyles.BOLD, "You have been banned for " + days + " days " +
                         "because you reached " + rounded + " points. "));
@@ -104,7 +107,10 @@ public class PunishmentManager {
 
             if(4 < amount && amount < 10){
 
+
+
                 Instant expiration = null;
+
                 try {
                     rootNode = loader.load();
                     String period = rootNode.getNode("punishment", "mutepoints", "5 mutepoints").getString();
@@ -115,18 +121,23 @@ public class PunishmentManager {
                     e.printStackTrace();
                 }
 
-                try {
-                    playerNode = playerLoader.load();
-                    playerNode.getNode("mute", "isMuted").setValue(true);
-                    playerNode.getNode("mute", "until").setValue(String.valueOf(expiration));
-                    int actual = playerNode.getNode("points", "mutepoints").getInt();
+                if(ConfigUtil.DB_ENABLED) {
+                    DBUtils.addMutepoints(p, -5);
+                    DBUtils.mute(p, String.valueOf(expiration));
+                }else {
+                    try {
+                        playerNode = playerLoader.load();
+                        playerNode.getNode("mute", "isMuted").setValue(true);
+                        playerNode.getNode("mute", "until").setValue(String.valueOf(expiration));
+                        int actual = playerNode.getNode("points", "mutepoints").getInt();
 
-                    playerNode.getNode("points", "mutepoints").setValue(actual - 5);
+                        playerNode.getNode("points", "mutepoints").setValue(actual - 5);
 
-                    playerLoader.save(playerNode);
+                        playerLoader.save(playerNode);
 
-                } catch(IOException e) {
-                    e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }else if(amount > 9){
                 int rounded = amount/10 * 10;
@@ -140,26 +151,36 @@ public class PunishmentManager {
 
                         int bp = Integer.parseInt(period.substring(1, period.length() - 2));
 
-                        playerNode = playerLoader.load();
-                        int actual = playerNode.getNode("points", "banpoints").getInt();
-                        playerNode.getNode("points", "banpoints").setValue(actual + bp);
-                        playerLoader.save(playerNode);
-                        checkPenalty(p, "banpoints", playerNode.getNode("points", "banpoints").getInt());
+                        if(ConfigUtil.DB_ENABLED) {
+                            DBUtils.addBanpoints(p, bp);
+                            checkPenalty(p, "banpoints", DBUtils.getBanpoints(p));
+                        }else {
+                            playerNode = playerLoader.load();
+                            int actual = playerNode.getNode("points", "banpoints").getInt();
+                            playerNode.getNode("points", "banpoints").setValue(actual + bp);
+                            playerLoader.save(playerNode);
+                            checkPenalty(p, "banpoints", playerNode.getNode("points", "banpoints").getInt());
 
+                        }
                     }else{
 
                         int minutes = Integer.parseInt(period.substring(0, period.length() - 1));
                         Instant expiration = Instant.now().plus(Duration.ofMinutes(minutes));
 
-                        playerNode = playerLoader.load();
-                        playerNode.getNode("mute", "isMuted").setValue(true);
-                        playerNode.getNode("mute", "until").setValue(String.valueOf(expiration));
-                        int actual = playerNode.getNode("points", "mutepoints").getInt();
+                        if(ConfigUtil.DB_ENABLED) {
+                            DBUtils.mute(p, String.valueOf(expiration));
+                            DBUtils.addMutepoints(p, -rounded);
 
-                        playerNode.getNode("points", "mutepoints").setValue(actual - rounded);
+                        }else {
+                            playerNode = playerLoader.load();
+                            playerNode.getNode("mute", "isMuted").setValue(true);
+                            playerNode.getNode("mute", "until").setValue(String.valueOf(expiration));
+                            int actual = playerNode.getNode("points", "mutepoints").getInt();
 
-                        playerLoader.save(playerNode);
+                            playerNode.getNode("points", "mutepoints").setValue(actual - rounded);
 
+                            playerLoader.save(playerNode);
+                        }
 
                     }
 

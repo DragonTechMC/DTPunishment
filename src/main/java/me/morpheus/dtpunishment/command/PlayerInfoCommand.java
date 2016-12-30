@@ -1,5 +1,7 @@
 package me.morpheus.dtpunishment.command;
 
+import me.morpheus.dtpunishment.ConfigUtil;
+import me.morpheus.dtpunishment.DBUtils;
 import me.morpheus.dtpunishment.DTPunishment;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -31,22 +33,32 @@ public class PlayerInfoCommand implements CommandExecutor {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         if (!args.hasAny("player")) {
-            Path playerData = Paths.get(main.getConfigPath() + "/data/" + src.getName() + ".conf");
-            ConfigurationLoader<CommentedConfigurationNode> loader =
-                    HoconConfigurationLoader.builder().setPath(playerData).build();
-            ConfigurationNode rootNode;
 
-            try {
-                rootNode = loader.load();
-                int mute = rootNode.getNode("points", "mutepoints").getInt();
-                int ban = rootNode.getNode("points", "banpoints").getInt();
-
+            if(ConfigUtil.DB_ENABLED) {
                 src.sendMessage(Text.of("Your info"));
                 src.sendMessage(Text.of("Player : " + src.getName()));
-                src.sendMessage(Text.of("Mute : " + mute));
-                src.sendMessage(Text.of("Ban : " + ban));
-            } catch (IOException e) {
-                e.printStackTrace();
+                src.sendMessage(Text.of("Mute : " + DBUtils.getMutepoints(src.getName())));
+                src.sendMessage(Text.of("Ban : " + DBUtils.getBanpoints(src.getName())));
+            }else {
+
+
+                Path playerData = Paths.get(main.getConfigPath() + "/data/" + src.getName() + ".conf");
+                ConfigurationLoader<CommentedConfigurationNode> loader =
+                        HoconConfigurationLoader.builder().setPath(playerData).build();
+                ConfigurationNode rootNode;
+
+                try {
+                    rootNode = loader.load();
+                    int mute = rootNode.getNode("points", "mutepoints").getInt();
+                    int ban = rootNode.getNode("points", "banpoints").getInt();
+
+                    src.sendMessage(Text.of("Your info"));
+                    src.sendMessage(Text.of("Player : " + src.getName()));
+                    src.sendMessage(Text.of("Mute : " + mute));
+                    src.sendMessage(Text.of("Ban : " + ban));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
         } else {
@@ -71,21 +83,26 @@ public class PlayerInfoCommand implements CommandExecutor {
 
             if (args.getOne("player").isPresent()) {
 
-
-                ConfigurationLoader<CommentedConfigurationNode> loader =
-                        HoconConfigurationLoader.builder().setPath(playerData).build();
-                ConfigurationNode rootNode;
-
-                try {
-                    rootNode = loader.load();
-                    int mute = rootNode.getNode("points", "mutepoints").getInt();
-                    int ban = rootNode.getNode("points", "banpoints").getInt();
-
+                if(ConfigUtil.DB_ENABLED) {
                     src.sendMessage(Text.of("Player : " + args.getOne("player").get().toString()));
-                    src.sendMessage(Text.of("Mute : " + mute));
-                    src.sendMessage(Text.of("Ban : " + ban));
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    src.sendMessage(Text.of("Mute : " + DBUtils.getMutepoints(name)));
+                    src.sendMessage(Text.of("Ban : " + DBUtils.getBanpoints(name)));
+                }else {
+                    ConfigurationLoader<CommentedConfigurationNode> loader =
+                            HoconConfigurationLoader.builder().setPath(playerData).build();
+                    ConfigurationNode rootNode;
+
+                    try {
+                        rootNode = loader.load();
+                        int mute = rootNode.getNode("points", "mutepoints").getInt();
+                        int ban = rootNode.getNode("points", "banpoints").getInt();
+
+                        src.sendMessage(Text.of("Player : " + args.getOne("player").get().toString()));
+                        src.sendMessage(Text.of("Mute : " + mute));
+                        src.sendMessage(Text.of("Ban : " + ban));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
 
