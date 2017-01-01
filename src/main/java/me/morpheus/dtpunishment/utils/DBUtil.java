@@ -1,30 +1,29 @@
-package me.morpheus.dtpunishment;
+package me.morpheus.dtpunishment.utils;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.sql.SqlService;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
-public class DBUtils {
-
+public class DBUtil {
 
     public static String JDBC;
 
     private static SqlService sql;
 
-    private static javax.sql.DataSource getDataSource(String jdbcUrl) throws SQLException {
-        if (sql == null) {
-            sql = Sponge.getServiceManager().provide(SqlService.class).get();
-        }
+    private static DataSource getDataSource(String jdbcUrl) throws SQLException {
+        if (!Optional.ofNullable(sql).isPresent()) sql = Sponge.getServiceManager().provide(SqlService.class).get();
         return sql.getDataSource(jdbcUrl);
     }
 
     public static int getBanpoints(String player) {
         try {
             Connection conn = getDataSource(JDBC).getConnection();
-            ResultSet set = conn.prepareStatement("SELECT Banpoints FROM dtpunishment WHERE PlayerName=\""+player+"\";").executeQuery();
+            ResultSet set = conn.prepareStatement("SELECT Banpoints FROM dtpunishment WHERE PlayerName=\"" + player + "\";").executeQuery();
             conn.close();
             set.next();
             return set.getInt("Banpoints");
@@ -74,7 +73,7 @@ public class DBUtils {
     }
 
 
-    public static void addBanpoints(String player, int amount){
+    public static void addBanpoints(String player, int amount) {
         try {
             Connection conn = getDataSource(JDBC).getConnection();
             conn.prepareStatement("UPDATE dtpunishment SET Banpoints = Banpoints + "+amount+" WHERE PlayerName=\""+player+"\" LIMIT 1;").executeUpdate();
@@ -84,7 +83,7 @@ public class DBUtils {
         }
     }
 
-    public static void addMutepoints(String player, int amount){
+    public static void addMutepoints(String player, int amount) {
         try {
             Connection conn = getDataSource(JDBC).getConnection();
             conn.prepareStatement("UPDATE dtpunishment SET Mutepoints = Mutepoints + "+amount+" WHERE PlayerName=\""+player+"\" LIMIT 1;").executeUpdate();
@@ -94,7 +93,7 @@ public class DBUtils {
         }
     }
 
-    public static void mute(String player, String end){
+    public static void mute(String player, String end) {
         try {
             Connection conn = getDataSource(JDBC).getConnection();
             conn.prepareStatement("UPDATE dtpunishment SET isMuted = 1, Until = "+end+" WHERE PlayerName=\""+player+"\" LIMIT 1;").executeUpdate();
@@ -104,7 +103,7 @@ public class DBUtils {
         }
     }
 
-    public static void createUser(String player){
+    public static void createUser(String player) {
         try {
             Connection conn = getDataSource(JDBC).getConnection();
             conn.prepareStatement("INSERT INTO dtpunishment (PlayerName,Banpoints,Mutepoints,isMuted)\n" +
@@ -115,7 +114,7 @@ public class DBUtils {
         }
     }
 
-    public static boolean userExists(String player){
+    public static boolean userExists(String player) {
         try {
             Connection conn = getDataSource(JDBC).getConnection();
             ResultSet set = conn.prepareStatement("SELECT PlayerName FROM dtpunishment WHERE PlayerName=\""+player+"\";").executeQuery();
@@ -127,7 +126,7 @@ public class DBUtils {
         return false;
     }
 
-    public static void unmute(String player){
+    public static void unmute(String player) {
         try {
             Connection conn = getDataSource(JDBC).getConnection();
             conn.prepareStatement("UPDATE dtpunishment SET isMuted = 0, Until = null WHERE PlayerName=\""+player+"\" LIMIT 1;").executeUpdate();

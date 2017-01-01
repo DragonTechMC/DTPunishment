@@ -1,10 +1,10 @@
 package me.morpheus.dtpunishment;
 
 import com.google.inject.Inject;
-import me.morpheus.dtpunishment.command.BanpointsCommand;
-import me.morpheus.dtpunishment.command.MutepointsCommand;
-import me.morpheus.dtpunishment.command.PlayerInfoCommand;
-import me.morpheus.dtpunishment.listener.PlayerListener;
+import me.morpheus.dtpunishment.commands.BanpointsCommand;
+import me.morpheus.dtpunishment.commands.MutepointsCommand;
+import me.morpheus.dtpunishment.commands.PlayerInfoCommand;
+import me.morpheus.dtpunishment.listeners.PlayerListener;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
@@ -18,8 +18,8 @@ import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 
+import java.io.IOException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 
 @Plugin(
         id = "dtpunishment",
@@ -36,7 +36,7 @@ public class DTPunishment {
 
     @Inject
     @DefaultConfig(sharedRoot = false)
-    private ConfigurationLoader<CommentedConfigurationNode> configManager;
+    private ConfigurationLoader<CommentedConfigurationNode> defaultConfigLoader;
 
     @Inject
     @ConfigDir(sharedRoot = false)
@@ -46,32 +46,32 @@ public class DTPunishment {
         return privateConfigDir;
     }
 
-    public Path getDefaultConfig(){
+    Path getDefaultConfig() {
         return defaultConfig;
+    }
+
+    ConfigurationLoader<CommentedConfigurationNode> getDefaultConfigLoader() {
+        return defaultConfigLoader;
     }
 
     public Logger getLogger() {
         return logger;
     }
 
-
-
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         getLogger().info("Hello world!");
-        getLogger().info("If you don't refactor me, I'm gonna kill myself");
+        //getLogger().info("If you don't refactor me, I'm gonna kill myself");
+        //getLogger().info("Ok, now it's better");
         ConfigurationManager config = new ConfigurationManager(this);
         config.generateConfig();
         try {
             config.init();
-        } catch (SQLException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         Sponge.getEventManager().registerListeners(this, new PlayerListener(this));
         registerCommand();
-
-
-
     }
 
 
@@ -85,11 +85,11 @@ public class DTPunishment {
 
 
 
-    public void registerCommand(){
+    private void registerCommand() {
 
         CommandSpec showBanpoints = CommandSpec.builder()
                 .permission("dtpunishment.banpoints.show")
-                .description(Text.of("Shows how many ban points the specified player has"))
+                .description(Text.of("Show how many Banpoints the specified player has "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
                 .executor(new BanpointsCommand(this))
                 .build();
@@ -97,17 +97,16 @@ public class DTPunishment {
 
         CommandSpec addBanpoints = CommandSpec.builder()
                 .permission("dtpunishment.banpoints.add")
-                .description(Text.of("Adds a specified amount of ban points to the specified player "))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))),
+                .description(Text.of("Add a specified amount of Banpoints to a player "))
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("target"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
                 .executor(new BanpointsCommand(this))
                 .build();
 
         CommandSpec banpoints = CommandSpec.builder()
                 .permission("dtpunishment.banpoints")
-                .description(Text.of("Shows the Ban points help menu"))
+                .description(Text.of("Show the Banpoints help menu"))
                 .arguments(GenericArguments.none())
-                .executor(new BanpointsCommand(this))
                 .child(showBanpoints, "show")
                 .child(addBanpoints, "add")
                 .build();
@@ -118,7 +117,7 @@ public class DTPunishment {
 
         CommandSpec showMutepoints = CommandSpec.builder()
                 .permission("dtpunishment.mutepoints.show")
-                .description(Text.of("Shows how many mute points the specified player has"))
+                .description(Text.of("Show how many Mutepoints the specified player has "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
                 .executor(new MutepointsCommand(this))
                 .build();
@@ -126,17 +125,16 @@ public class DTPunishment {
 
         CommandSpec addMutepoints = CommandSpec.builder()
                 .permission("dtpunishment.mutepoints.add")
-                .description(Text.of("Adds a specified amount of mute points to the specified player  "))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))),
+                .description(Text.of("Add a specified amount of Mutepoints to a player "))
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("target"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
                 .executor(new MutepointsCommand(this))
                 .build();
 
         CommandSpec mutepoints = CommandSpec.builder()
                 .permission("dtpunishment.mutepoints")
-                .description(Text.of("Shows the Mute points help menu"))
+                .description(Text.of("Show the Mutepoints help menu"))
                 .arguments(GenericArguments.none())
-                .executor(new MutepointsCommand(this))
                 .child(showMutepoints, "show")
                 .child(addMutepoints, "add")
                 .build();
@@ -144,19 +142,12 @@ public class DTPunishment {
         Sponge.getCommandManager().register(this, mutepoints, "mutepoints");
 
 
-        CommandSpec playerInfoShow = CommandSpec.builder()
-                .permission("dtpunishment.playerinfo.others")
-                .description(Text.of("Shows a player's info (Only shows others if moderator)"))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
-                .executor(new PlayerInfoCommand(this))
-                .build();
-
         CommandSpec playerInfo = CommandSpec.builder()
                 .permission("dtpunishment.playerinfo")
-                .description(Text.of("Shows your info "))
-                .arguments(GenericArguments.none())
+                .description(Text.of("Show your info "))
+                .arguments(GenericArguments.onlyOne(GenericArguments.optionalWeak(GenericArguments.requiringPermission(
+                                GenericArguments.string(Text.of("player")), "dtpunishment.playerinfo.others"))))
                 .executor(new PlayerInfoCommand(this))
-                .child(playerInfoShow, "show")
                 .build();
 
         Sponge.getCommandManager().register(this, playerInfo, "pinfo", "playerinfo");
