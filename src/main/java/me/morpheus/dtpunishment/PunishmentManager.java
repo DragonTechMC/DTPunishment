@@ -61,8 +61,11 @@ public class PunishmentManager {
                 playerNode.getNode("points", "banpoints").setValue(actual - rounded);
                 ConfigUtil.save(main.getConfigPath(), p, playerNode);
             }
-            Util.getUser(p).get().getPlayer().get().kick(Text.of(TextColors.AQUA, TextStyles.BOLD,
-                    "You have been banned for " + days + " days " + "because you reached " + rounded + " points. "));
+
+            if(Util.getUser(p).get().isOnline()) {
+                Util.getUser(p).get().getPlayer().get().kick(Text.of(TextColors.AQUA, TextStyles.BOLD,
+                        "You have been banned for " + days + " days " + "because you reached " + rounded + " points. "));
+            }
 
         } else if (pointsType.equalsIgnoreCase("Mutepoints")) {
 
