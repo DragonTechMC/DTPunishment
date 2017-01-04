@@ -60,9 +60,7 @@ public class DTPunishment {
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
-        getLogger().info("Hello world!");
-        //getLogger().info("If you don't refactor me, I'm gonna kill myself");
-        //getLogger().info("Ok, now it's better");
+        getLogger().info("Enabling DTPunishment...");
         ConfigurationManager config = new ConfigurationManager(this);
         config.generateConfig();
         try {
