@@ -48,8 +48,8 @@ public class MutepointsCommand implements CommandExecutor {
                 int added = args.<Integer>getOne("amount").get();
 
                 if (ConfigUtil.DB_ENABLED) {
-                    DBUtil.addBanpoints(player.get().getName(), added);
-                    punishment.checkPenalty(player.get().getName(), "mutepoints", DBUtil.getBanpoints(player.get().getName()));
+                    DBUtil.addMutepoints(player.get().getName(), added);
+                    punishment.checkPenalty(player.get().getName(), "mutepoints", DBUtil.getMutepoints(player.get().getName()));
                     return CommandResult.success();
                 } else {
                     int actual = playerNode.getNode("points", "mutepoints").getInt();
@@ -60,7 +60,7 @@ public class MutepointsCommand implements CommandExecutor {
                 }
             } else if (args.getOne("player").isPresent()) {
                 if (ConfigUtil.DB_ENABLED) {
-                    src.sendMessage(Text.of(player.get().getName() + " has " + DBUtil.getBanpoints(player.get().getName()) + " mutepoints"));
+                    src.sendMessage(Text.of(player.get().getName() + " has " + DBUtil.getMutepoints(player.get().getName()) + " mutepoints"));
                     return CommandResult.success();
                 } else {
                     int amount = playerNode.getNode("points", "mutepoints").getInt();

@@ -42,7 +42,7 @@ public class PlayerInfoCommand implements CommandExecutor {
 
                 src.sendMessage(Text.of("Player : " + player.get().getName()));
                 src.sendMessage(Text.of("Mute : " + playerNode.getNode("points", "mutepoints").getInt()));
-                src.sendMessage(Text.of("Ban : " + playerNode.getNode("points", "mutepoints").getInt()));
+                src.sendMessage(Text.of("Ban : " + playerNode.getNode("points", "banpoints").getInt()));
                 return CommandResult.success();
             }
 
@@ -57,7 +57,7 @@ public class PlayerInfoCommand implements CommandExecutor {
 
                 src.sendMessage(Text.of("Player : " + src.getName()));
                 src.sendMessage(Text.of("Mute : " + playerNode.getNode("points", "mutepoints").getInt()));
-                src.sendMessage(Text.of("Ban : " + playerNode.getNode("points", "mutepoints").getInt()));
+                src.sendMessage(Text.of("Ban : " + playerNode.getNode("points", "banpoints").getInt()));
                 return CommandResult.success();
             }
         }
