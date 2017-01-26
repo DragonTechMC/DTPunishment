@@ -1,12 +1,12 @@
 package me.morpheus.dtpunishment.listeners;
 
 
+import me.morpheus.dtpunishment.ChatWatcher;
 import me.morpheus.dtpunishment.DTPunishment;
 import me.morpheus.dtpunishment.PunishmentManager;
 import me.morpheus.dtpunishment.utils.ConfigUtil;
 import me.morpheus.dtpunishment.utils.DBUtil;
 import ninja.leaping.configurate.ConfigurationNode;
-import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.cause.Root;
@@ -19,8 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
 
 public class PlayerListener {
 
@@ -60,7 +58,7 @@ public class PlayerListener {
     }
 
 
-    @Listener //TODO for god sake refactor this
+    @Listener
     public void onPlayerChat(MessageChannelEvent.Chat event, @Root Player player){
         ConfigurationNode rootNode = null;
         try {
@@ -68,6 +66,10 @@ public class PlayerListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        String message = event.getRawMessage().toPlain();
+        ChatWatcher chatw = new ChatWatcher(main);
+
 
         if (ConfigUtil.DB_ENABLED) {
             if (DBUtil.isMuted(player.getName())) {
@@ -79,31 +81,28 @@ public class PlayerListener {
                     event.setMessageCancelled(true);
                 }
             } else {
-                String message = event.getRawMessage().toPlain();
-                String[] words = message.split("\\s+");
-                String str = rootNode.getNode("banned", "list", "words").getString(); //TODO string ? c mon
-                List<String> list  = Arrays.asList(str.split(","));
-                for (String word : words) {
-                    if (list.contains(word.toLowerCase())) {
-                        int points = rootNode.getNode("banned", "list", "mutepoints").getInt();
-                        DBUtil.addMutepoints(player.getName(), points);
-                        player.sendMessage(Text.of("You said a banned word. " +
-                                points + " mutepoints have been added automatically, you now have " +
-                                DBUtil.getMutepoints(player.getName()) +
-                                " If you believe this is an error, contact a staff member."));
-
-                        event.setMessageCancelled(true);
-                    }
-                    if (word.length() > 3 && StringUtils.isAllUpperCase(word)) {
-                        player.sendMessage(Text.of("You are not allowed to send messages in caps"));
-                        event.setMessageCancelled(true);
-                    }
+                if (chatw.containBannedWords(message)) {
+                    int points = rootNode.getNode("chat", "banned", "mutepoints").getInt();
+                    DBUtil.addMutepoints(player.getName(), points);
+                    player.sendMessage(Text.of("You said a banned word. " +
+                            points + " mutepoints have been added automatically, you now have " +
+                            DBUtil.getMutepoints(player.getName()) +
+                            ". If you believe this is an error, contact a staff member."));
+                    event.setMessageCancelled(true);
                 }
+
+                if (chatw.containUppercase(message)) {
+                    int points = rootNode.getNode("chat", "caps", "mutepoints").getInt();
+                    DBUtil.addMutepoints(player.getName(), points);
+                    player.sendMessage(Text.of("You are not allowed to send messages in caps, " +
+                            points + " mutepoints have been added automatically, you now have " +
+                            DBUtil.getMutepoints(player.getName()) +
+                            ". If you believe this is an error, contact a staff member."));
+                    event.setMessageCancelled(true);
+                }
+
                 PunishmentManager pm = new PunishmentManager(main);
                 pm.checkPenalty(player.getName(), "mutepoints", DBUtil.getMutepoints(player.getName()));
-
-
-
             }
         } else {
             ConfigurationNode playerNode = ConfigUtil.getPlayerNode(main.getConfigPath(), player.getName());
@@ -120,27 +119,32 @@ public class PlayerListener {
                     event.setMessageCancelled(true);
                 }
             } else {
-                String message = event.getRawMessage().toPlain();
-                String[] words = message.split(" ");
-                String str = rootNode.getNode("banned", "list", "words").getString(); //TODO string ? c mon
-                List<String> list  = Arrays.asList(str.split(","));
-                for (String word : words) {
-                    if (list.contains(word.toLowerCase())) {
-                        int points = rootNode.getNode("banned", "list", "mutepoints").getInt();
-                        int actual = playerNode.getNode("points", "mutepoints").getInt();
-                        playerNode.getNode("points", "mutepoints").setValue(actual + points);
-                        ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
-                        player.sendMessage(Text.of("You said a banned word. " +
-                                points + " mutepoints have been added automatically, you now have " +
-                                playerNode.getNode("points", "mutepoints").getInt() +
-                                " If you believe this is an error, contact a staff member."));
-                        event.setMessageCancelled(true);
-                    }
-                    if (word.length() > 3 && StringUtils.isAllUpperCase(word)) {
-                        player.sendMessage(Text.of("You are not allowed to send messages in caps"));
-                        event.setMessageCancelled(true);
-                    }
+
+                if (chatw.containBannedWords(message)) {
+                    int points = rootNode.getNode("chat", "banned", "mutepoints").getInt();
+                    int actual = playerNode.getNode("points", "mutepoints").getInt();
+                    playerNode.getNode("points", "mutepoints").setValue(actual + points);
+                    ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
+                    player.sendMessage(Text.of("You said a banned word. " +
+                            points + " mutepoints have been added automatically, you now have " +
+                            playerNode.getNode("points", "mutepoints").getInt() +
+                            ". If you believe this is an error, contact a staff member."));
+                    event.setMessageCancelled(true);
                 }
+
+                if (chatw.containUppercase(message)) {
+                    int points = rootNode.getNode("chat", "caps", "mutepoints").getInt();
+                    int actual = playerNode.getNode("points", "mutepoints").getInt();
+                    playerNode.getNode("points", "mutepoints").setValue(actual + points);
+                    ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
+                    player.sendMessage(Text.of("You are not allowed to send messages in caps, " +
+                            points + " mutepoints have been added automatically, you now have " +
+                            playerNode.getNode("points", "mutepoints").getInt() +
+                            ". If you believe this is an error, contact a staff member."));
+                    event.setMessageCancelled(true);
+                }
+
+
                 PunishmentManager pm = new PunishmentManager(main);
                 pm.checkPenalty(player.getName(), "mutepoints", playerNode.getNode("points", "mutepoints").getInt());
             }
