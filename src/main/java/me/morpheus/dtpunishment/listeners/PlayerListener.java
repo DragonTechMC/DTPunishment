@@ -7,12 +7,14 @@ import me.morpheus.dtpunishment.PunishmentManager;
 import me.morpheus.dtpunishment.utils.ConfigUtil;
 import me.morpheus.dtpunishment.utils.DBUtil;
 import ninja.leaping.configurate.ConfigurationNode;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -84,20 +86,34 @@ public class PlayerListener {
                 if (chatw.containBannedWords(message)) {
                     int points = rootNode.getNode("chat", "banned", "mutepoints").getInt();
                     DBUtil.addMutepoints(player.getName(), points);
-                    player.sendMessage(Text.of(TextColors.RED,"You said a banned word; " +
+                    player.sendMessage(Text.of(TextColors.RED, "You said a banned word. " +
                             points + " mutepoint(s) have been added automatically, you now have " +
                             DBUtil.getMutepoints(player.getName()) +
                             ". If you believe this is an error, contact a staff member."));
+                    for (Player p : Sponge.getServer().getOnlinePlayers()) {
+                        if (p.hasPermission("dtpunishment.staff.notify")) {
+                            p.sendMessage(Text.of(player.getName() + " said a banned word. " +
+                                    points + " mutepoint(s) have been added automatically, he now has " +
+                                    DBUtil.getMutepoints(player.getName())));
+                        }
+                    }
                     event.setMessageCancelled(true);
                 }
 
                 if (chatw.containUppercase(message)) {
                     int points = rootNode.getNode("chat", "caps", "mutepoints").getInt();
                     DBUtil.addMutepoints(player.getName(), points);
-                    player.sendMessage(Text.of(TextColors.RED,"You have exceeded the max percentage of caps allowed; " +
-                            points + " mutepoints have been added automatically, you now have " +
+                    player.sendMessage(Text.of(TextColors.RED, "You have exceeded the max percentage of caps allowed; " +
+                            points + " mutepoint(s) have been added automatically, you now have " +
                             DBUtil.getMutepoints(player.getName()) +
                             ". If you believe this is an error, contact a staff member."));
+                    for (Player p : Sponge.getServer().getOnlinePlayers()) {
+                        if (p.hasPermission("dtpunishment.staff.notify")) {
+                            p.sendMessage(Text.of(player.getName() + " has exceeded the max percentage of caps allowed; " +
+                                    points + " mutepoint(s) have been added automatically, he now has " +
+                                    DBUtil.getMutepoints(player.getName())));
+                        }
+                    }
                     event.setMessageCancelled(true);
                 }
 
@@ -125,10 +141,17 @@ public class PlayerListener {
                     int actual = playerNode.getNode("points", "mutepoints").getInt();
                     playerNode.getNode("points", "mutepoints").setValue(actual + points);
                     ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
-                    player.sendMessage(Text.of(TextColors.RED,"You said a banned word; " +
+                    player.sendMessage(Text.of(TextColors.RED, "You said a banned word. " +
                             points + " mutepoint(s) have been added automatically, you now have " +
                             playerNode.getNode("points", "mutepoints").getInt() +
                             ". If you believe this is an error, contact a staff member."));
+                    for (Player p : Sponge.getServer().getOnlinePlayers()) {
+                        if (p.hasPermission("dtpunishment.staff.notify")) {
+                            p.sendMessage(Text.of(player.getName() + " said a banned word. " +
+                                    points + " mutepoint(s) have been added automatically, he now has " +
+                                    playerNode.getNode("points", "mutepoints").getInt()));
+                        }
+                    }
                     event.setMessageCancelled(true);
                 }
 
@@ -137,10 +160,17 @@ public class PlayerListener {
                     int actual = playerNode.getNode("points", "mutepoints").getInt();
                     playerNode.getNode("points", "mutepoints").setValue(actual + points);
                     ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
-                    player.sendMessage(Text.of(TextColors.RED,"You have exceeded the max percentage of caps allowed; " +
+                    player.sendMessage(Text.of(TextColors.RED, "You have exceeded the max percentage of caps allowed; " +
                             points + " mutepoint(s) have been added automatically, you now have " +
                             playerNode.getNode("points", "mutepoints").getInt() +
                             ". If you believe this is an error, contact a staff member."));
+                    for (Player p : Sponge.getServer().getOnlinePlayers()) {
+                        if (p.hasPermission("dtpunishment.staff.notify")) {
+                            p.sendMessage(Text.of(player.getName() + " has exceeded the max percentage of caps allowed;  " +
+                                    points + " mutepoint(s) have been added automatically, he now has " +
+                                    playerNode.getNode("points", "mutepoints").getInt()));
+                        }
+                    }
                     event.setMessageCancelled(true);
                 }
 
