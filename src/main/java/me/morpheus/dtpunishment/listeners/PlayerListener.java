@@ -86,14 +86,14 @@ public class PlayerListener {
                 if (chatw.containBannedWords(message)) {
                     int points = rootNode.getNode("chat", "banned", "mutepoints").getInt();
                     DBUtil.addMutepoints(player.getName(), points);
-                    player.sendMessage(Text.of(TextColors.RED, "You said a banned word. " +
+                    player.sendMessage(Text.of(TextColors.RED, "You said a banned word; " +
                             points + " mutepoint(s) have been added automatically, you now have " +
                             DBUtil.getMutepoints(player.getName()) +
                             ". If you believe this is an error, contact a staff member."));
                     for (Player p : Sponge.getServer().getOnlinePlayers()) {
                         if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(player.getName() + " said a banned word. " +
-                                    points + " mutepoint(s) have been added automatically, he now has " +
+                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " said a banned word; " +
+                                    points + " mutepoint(s) have been added automatically, they now have " +
                                     DBUtil.getMutepoints(player.getName())));
                         }
                     }
@@ -109,8 +109,8 @@ public class PlayerListener {
                             ". If you believe this is an error, contact a staff member."));
                     for (Player p : Sponge.getServer().getOnlinePlayers()) {
                         if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(player.getName() + " has exceeded the max percentage of caps allowed; " +
-                                    points + " mutepoint(s) have been added automatically, he now has " +
+                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " has exceeded the max percentage of caps allowed; " +
+                                    points + " mutepoint(s) have been added automatically, they now have " +
                                     DBUtil.getMutepoints(player.getName())));
                         }
                     }
@@ -141,14 +141,14 @@ public class PlayerListener {
                     int actual = playerNode.getNode("points", "mutepoints").getInt();
                     playerNode.getNode("points", "mutepoints").setValue(actual + points);
                     ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
-                    player.sendMessage(Text.of(TextColors.RED, "You said a banned word. " +
+                    player.sendMessage(Text.of(TextColors.RED, "You said a banned word; " +
                             points + " mutepoint(s) have been added automatically, you now have " +
                             playerNode.getNode("points", "mutepoints").getInt() +
                             ". If you believe this is an error, contact a staff member."));
                     for (Player p : Sponge.getServer().getOnlinePlayers()) {
                         if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(player.getName() + " said a banned word. " +
-                                    points + " mutepoint(s) have been added automatically, he now has " +
+                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " said a banned word; " +
+                                    points + " mutepoint(s) have been added automatically, they now have " +
                                     playerNode.getNode("points", "mutepoints").getInt()));
                         }
                     }
@@ -166,8 +166,8 @@ public class PlayerListener {
                             ". If you believe this is an error, contact a staff member."));
                     for (Player p : Sponge.getServer().getOnlinePlayers()) {
                         if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(player.getName() + " has exceeded the max percentage of caps allowed;  " +
-                                    points + " mutepoint(s) have been added automatically, he now has " +
+                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " has exceeded the max percentage of caps allowed;  " +
+                                    points + " mutepoint(s) have been added automatically, they now have " +
                                     playerNode.getNode("points", "mutepoints").getInt()));
                         }
                     }
