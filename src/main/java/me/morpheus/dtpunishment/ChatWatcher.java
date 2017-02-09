@@ -15,9 +15,11 @@ public class ChatWatcher {
         this.main = main;
     }
 
+    ConfigurationNode rootNode = null;
+
+
     public boolean containBannedWords(String message){
 
-        ConfigurationNode rootNode = null;
         try {
             rootNode = main.getDefaultConfigLoader().load();
         } catch (IOException e) {
@@ -36,10 +38,29 @@ public class ChatWatcher {
     }
 
     public boolean containUppercase(String message) {
+
+        try {
+            rootNode = main.getDefaultConfigLoader().load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int minimum = rootNode.getNode("chat", "caps", "minimum_lenght").getInt();
+        int percentage = rootNode.getNode("chat", "caps", "percentage").getInt();
+
         String[] words = message.split("\\s+");
         for (String word : words) {
-            if (word.length() > 3 && StringUtils.isAllUpperCase(word.replaceAll("[^\\w]", ""))) {
-                return true;
+            if (word.length() > minimum) {
+                if (StringUtils.isAllUpperCase(word.replaceAll("[^\\w]", ""))) {
+                    return true;
+                } else if (!StringUtils.isAllLowerCase(word.replaceAll("[^\\w]", ""))) {
+                    int count = 0;
+                    for (int i = 0; i < word.replaceAll("[^\\w]", "").length(); i++) {
+                        if (Character.isUpperCase(word.replaceAll("[^\\w]", "").charAt(i))) count++;
+                    }
+                    int max = word.replaceAll("[^\\w]", "").length() / (100/percentage);
+                    if (count > max) return true;
+                }
             }
         }
         return false;

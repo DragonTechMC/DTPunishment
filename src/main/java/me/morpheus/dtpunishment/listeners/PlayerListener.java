@@ -92,8 +92,8 @@ public class PlayerListener {
                             ". If you believe this is an error, contact a staff member."));
                     for (Player p : Sponge.getServer().getOnlinePlayers()) {
                         if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " said a banned word; " +
-                                    points + " mutepoint(s) have been added automatically, they now have " +
+                            p.sendMessage(Text.of(player.getName() + " said a banned word. " +
+                                    points + " mutepoint(s) have been added automatically, he now has " +
                                     DBUtil.getMutepoints(player.getName())));
                         }
                     }
@@ -109,8 +109,8 @@ public class PlayerListener {
                             ". If you believe this is an error, contact a staff member."));
                     for (Player p : Sponge.getServer().getOnlinePlayers()) {
                         if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " has exceeded the max percentage of caps allowed; " +
-                                    points + " mutepoint(s) have been added automatically, they now have " +
+                            p.sendMessage(Text.of(player.getName() + " has exceeded the max percentage of caps allowed; " +
+                                    points + " mutepoint(s) have been added automatically, he now has " +
                                     DBUtil.getMutepoints(player.getName())));
                         }
                     }
@@ -147,8 +147,8 @@ public class PlayerListener {
                             ". If you believe this is an error, contact a staff member."));
                     for (Player p : Sponge.getServer().getOnlinePlayers()) {
                         if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " said a banned word; " +
-                                    points + " mutepoint(s) have been added automatically, they now have " +
+                            p.sendMessage(Text.of(player.getName() + " said a banned word. " +
+                                    points + " mutepoint(s) have been added automatically, he now has " +
                                     playerNode.getNode("points", "mutepoints").getInt()));
                         }
                     }
@@ -166,8 +166,8 @@ public class PlayerListener {
                             ". If you believe this is an error, contact a staff member."));
                     for (Player p : Sponge.getServer().getOnlinePlayers()) {
                         if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " has exceeded the max percentage of caps allowed;  " +
-                                    points + " mutepoint(s) have been added automatically, they now have " +
+                            p.sendMessage(Text.of(player.getName() + " has exceeded the max percentage of caps allowed;  " +
+                                    points + " mutepoint(s) have been added automatically, he now has " +
                                     playerNode.getNode("points", "mutepoints").getInt()));
                         }
                     }
