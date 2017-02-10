@@ -18,8 +18,8 @@ repositories {
 
 spongestart{
     eula true
-    spongeVanillaBuild '1.10.2-5.1.0-BETA-355'
-    spongeForgeBuild '1.10.2-2098-5.0.0-BETA-1808'
+    spongeVanillaBuild '1.10.2-5.1.0-BETA-371'
+    spongeForgeBuild '1.10.2-2221-5.1.0-BETA-2136'
     forgeServerFolder 'run/forge'
     vanillaServerFolder 'run/vanilla'
 }

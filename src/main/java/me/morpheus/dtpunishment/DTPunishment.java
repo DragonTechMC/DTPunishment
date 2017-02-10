@@ -1,9 +1,11 @@
 package me.morpheus.dtpunishment;
 
 import com.google.inject.Inject;
-import me.morpheus.dtpunishment.commands.BanpointsCommand;
-import me.morpheus.dtpunishment.commands.MutepointsCommand;
 import me.morpheus.dtpunishment.commands.PlayerInfoCommand;
+import me.morpheus.dtpunishment.commands.banpoints.CommandBanpointsEdit;
+import me.morpheus.dtpunishment.commands.banpoints.CommandBanpointsShow;
+import me.morpheus.dtpunishment.commands.mutepoints.CommandMutepointsEdit;
+import me.morpheus.dtpunishment.commands.mutepoints.CommandMutepointsShow;
 import me.morpheus.dtpunishment.listeners.PlayerListener;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -78,29 +80,29 @@ public class DTPunishment {
 
 
 
-
-
-
-
-
-
-
     private void registerCommand() {
 
         CommandSpec showBanpoints = CommandSpec.builder()
                 .permission("dtpunishment.banpoints.show")
                 .description(Text.of("Show how many Banpoints the specified player has "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
-                .executor(new BanpointsCommand(this))
+                .executor(new CommandBanpointsShow(this))
                 .build();
-
 
         CommandSpec addBanpoints = CommandSpec.builder()
                 .permission("dtpunishment.banpoints.add")
                 .description(Text.of("Add a specified amount of Banpoints to a player "))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("target"))),
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
-                .executor(new BanpointsCommand(this))
+                .executor(new CommandBanpointsEdit(this, "add"))
+                .build();
+
+        CommandSpec removeBanpoints = CommandSpec.builder()
+                .permission("dtpunishment.banpoints.remove")
+                .description(Text.of("Remove a specified amount of Banpoints to a player "))
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))),
+                        GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
+                .executor(new CommandBanpointsEdit(this, "remove"))
                 .build();
 
         CommandSpec banpoints = CommandSpec.builder()
@@ -109,9 +111,10 @@ public class DTPunishment {
                 .arguments(GenericArguments.none())
                 .child(showBanpoints, "show")
                 .child(addBanpoints, "add")
+                .child(removeBanpoints, "remove")
                 .build();
 
-        Sponge.getCommandManager().register(this, banpoints, "banpoints");
+        Sponge.getCommandManager().register(this, banpoints, "banpoints", "bp");
 
 
 
@@ -119,16 +122,23 @@ public class DTPunishment {
                 .permission("dtpunishment.mutepoints.show")
                 .description(Text.of("Show how many Mutepoints the specified player has "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
-                .executor(new MutepointsCommand(this))
+                .executor(new CommandMutepointsShow(this))
                 .build();
-
 
         CommandSpec addMutepoints = CommandSpec.builder()
                 .permission("dtpunishment.mutepoints.add")
                 .description(Text.of("Add a specified amount of Mutepoints to a player "))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("target"))),
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
-                .executor(new MutepointsCommand(this))
+                .executor(new CommandMutepointsEdit(this, "add"))
+                .build();
+
+        CommandSpec removeMutepoints = CommandSpec.builder()
+                .permission("dtpunishment.mutepoints.add")
+                .description(Text.of("Add a specified amount of Mutepoints to a player "))
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))),
+                        GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
+                .executor(new CommandMutepointsEdit(this, "remove"))
                 .build();
 
         CommandSpec mutepoints = CommandSpec.builder()
@@ -137,9 +147,10 @@ public class DTPunishment {
                 .arguments(GenericArguments.none())
                 .child(showMutepoints, "show")
                 .child(addMutepoints, "add")
+                .child(removeMutepoints, "remove")
                 .build();
 
-        Sponge.getCommandManager().register(this, mutepoints, "mutepoints");
+        Sponge.getCommandManager().register(this, mutepoints, "mutepoints", "mt");
 
 
         CommandSpec playerInfo = CommandSpec.builder()
@@ -151,7 +162,6 @@ public class DTPunishment {
                 .build();
 
         Sponge.getCommandManager().register(this, playerInfo, "pinfo", "playerinfo");
-
 
     }
 
