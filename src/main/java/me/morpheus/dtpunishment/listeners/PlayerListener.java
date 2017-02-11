@@ -7,6 +7,9 @@ import me.morpheus.dtpunishment.PunishmentManager;
 import me.morpheus.dtpunishment.utils.ConfigUtil;
 import me.morpheus.dtpunishment.utils.DBUtil;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -16,11 +19,17 @@ import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class PlayerListener {
 
@@ -53,6 +62,75 @@ public class PlayerListener {
                     main.getLogger().info("Success");
                 } catch (IOException e) {
                     main.getLogger().info("Error while creating player file");
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        int day = LocalDateTime.now().toLocalDate().getDayOfMonth();
+        main.getLogger().info(""+day+main.getConfigPath());
+        if (day == 11) {
+            File data = new File(main.getConfigPath() + "/data/");
+            for (File f : data.listFiles()) {
+                ConfigurationLoader<CommentedConfigurationNode> loader =
+                        HoconConfigurationLoader.builder().setPath(f.toPath()).build();
+                ConfigurationNode playerNode = null;
+                try {
+                    playerNode = loader.load();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                boolean received = playerNode.getNode("points", "bonus_received").getBoolean();
+                if (!received) {
+                    int actualmp = playerNode.getNode("points", "mutepoints").getInt();
+                    int actualbp = playerNode.getNode("points", "banpoints").getInt();
+                    if (actualbp != 0) {
+                        playerNode.getNode("points", "mutepoints").setValue(actualbp - 1);
+                    }
+                    if (actualmp != 0) {
+                        playerNode.getNode("points", "mutepoints").setValue(actualmp - 5);
+                    }
+                    playerNode.getNode("points", "bonus_received").setValue(true);
+
+                    try {
+                        loader.save(playerNode);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } else if (day == 2) {
+            File data = new File(main.getConfigPath() + "/data/");
+            for (File f : data.listFiles()) {
+                ConfigurationLoader<CommentedConfigurationNode> loader =
+                        HoconConfigurationLoader.builder().setPath(f.toPath()).build();
+                ConfigurationNode playerNode = null;
+                try {
+                    playerNode = loader.load();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                boolean received = playerNode.getNode("points", "bonus_received").getBoolean();
+                if (received) {
+                    playerNode.getNode("points", "bonus_received").setValue(false);
+                    try {
+                        loader.save(playerNode);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                int actualmp = playerNode.getNode("points", "mutepoints").getInt();
+                int actualbp = playerNode.getNode("points", "banpoints").getInt();
+                if (actualbp != 0) {
+                    playerNode.getNode("points", "mutepoints").setValue(actualbp - 1);
+                }
+                if (actualmp != 0) {
+                    playerNode.getNode("points", "mutepoints").setValue(actualmp - 5);
+                }
+                try {
+                    loader.save(playerNode);
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }

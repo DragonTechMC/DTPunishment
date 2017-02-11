@@ -82,8 +82,10 @@ class ConfigurationManager {
         } else {
             main.getLogger().warn("Config not found. Generating default config...");
             Asset asset = Sponge.getAssetManager().getAsset(main, "default.conf").get();
+            Asset chat = Sponge.getAssetManager().getAsset(main, "chat.conf").get();
             try {
                 asset.copyToFile(main.getDefaultConfig());
+                chat.copyToDirectory(main.getConfigPath());
                 main.getLogger().info("Success");
             } catch (IOException e) {
                 main.getLogger().error("Error while creating config");

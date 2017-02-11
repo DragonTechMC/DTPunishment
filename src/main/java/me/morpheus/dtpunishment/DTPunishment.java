@@ -1,6 +1,7 @@
 package me.morpheus.dtpunishment;
 
 import com.google.inject.Inject;
+import me.morpheus.dtpunishment.commands.CommandWordAdd;
 import me.morpheus.dtpunishment.commands.PlayerInfoCommand;
 import me.morpheus.dtpunishment.commands.banpoints.CommandBanpointsEdit;
 import me.morpheus.dtpunishment.commands.banpoints.CommandBanpointsShow;
@@ -162,6 +163,15 @@ public class DTPunishment {
                 .build();
 
         Sponge.getCommandManager().register(this, playerInfo, "pinfo", "playerinfo");
+
+        CommandSpec addWord = CommandSpec.builder()
+                .permission("dtpunishment.word.add")
+                .description(Text.of("Add a word to the list of banned ones "))
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("word"))))
+                .executor(new CommandWordAdd(this))
+                .build();
+
+        Sponge.getCommandManager().register(this, addWord, "addword");
 
     }
 
