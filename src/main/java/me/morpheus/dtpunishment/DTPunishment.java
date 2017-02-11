@@ -150,7 +150,7 @@ public class DTPunishment {
                 .child(removeMutepoints, "remove")
                 .build();
 
-        Sponge.getCommandManager().register(this, mutepoints, "mutepoints", "mt");
+        Sponge.getCommandManager().register(this, mutepoints, "mutepoints", "mp");
 
 
         CommandSpec playerInfo = CommandSpec.builder()
