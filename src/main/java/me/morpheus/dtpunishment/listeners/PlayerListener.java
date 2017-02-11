@@ -25,11 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class PlayerListener {
 
@@ -69,7 +65,7 @@ public class PlayerListener {
 
         int day = LocalDateTime.now().toLocalDate().getDayOfMonth();
         main.getLogger().info(""+day+main.getConfigPath());
-        if (day == 11) {
+        if (day == 1) {
             File data = new File(main.getConfigPath() + "/data/");
             for (File f : data.listFiles()) {
                 ConfigurationLoader<CommentedConfigurationNode> loader =
