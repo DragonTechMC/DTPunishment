@@ -38,6 +38,7 @@ public class PlayerListener {
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
 
+
         if (ConfigUtil.DB_ENABLED) {
             if (!DBUtil.userExists(event.getTargetEntity().getName())) {
                 DBUtil.createUser(event.getTargetEntity().getName());
@@ -198,6 +199,16 @@ public class PlayerListener {
             ConfigurationNode playerNode = ConfigUtil.getPlayerNode(main.getConfigPath(), player.getName());
             boolean isMuted = playerNode.getNode("mute", "isMuted").getBoolean();
 
+            Path potentialFile = Paths.get(main.getConfigPath()+ "/chat.conf");
+            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(potentialFile).build();
+            ConfigurationNode chatNode = null;
+
+            try {
+                chatNode = loader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             if (isMuted) {
                 Instant expiration = Instant.parse(playerNode.getNode("mute", "until").getString());
                 if (Instant.now().isAfter(expiration)) {
@@ -210,8 +221,17 @@ public class PlayerListener {
                 }
             } else {
 
+                Instant in = Instant.now();
+                if (chatw.isSpam(message, player, in)) {
+                    int points = chatNode.getNode("spam", "mutepoints").getInt();
+                    int actual = playerNode.getNode("points", "mutepoints").getInt();
+                    playerNode.getNode("points", "mutepoints").setValue(actual + points);
+                    ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
+                    event.setMessageCancelled(true);
+                }
+
                 if (chatw.containBannedWords(message)) {
-                    int points = rootNode.getNode("chat", "banned", "mutepoints").getInt();
+                    int points = chatNode.getNode("banned", "mutepoints").getInt();
                     int actual = playerNode.getNode("points", "mutepoints").getInt();
                     playerNode.getNode("points", "mutepoints").setValue(actual + points);
                     ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
@@ -230,7 +250,7 @@ public class PlayerListener {
                 }
 
                 if (chatw.containUppercase(message)) {
-                    int points = rootNode.getNode("chat", "caps", "mutepoints").getInt();
+                    int points = chatNode.getNode("caps", "mutepoints").getInt();
                     int actual = playerNode.getNode("points", "mutepoints").getInt();
                     playerNode.getNode("points", "mutepoints").setValue(actual + points);
                     ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
@@ -247,7 +267,6 @@ public class PlayerListener {
                     }
                     event.setMessageCancelled(true);
                 }
-
 
                 PunishmentManager pm = new PunishmentManager(main);
                 pm.checkPenalty(player.getName(), "mutepoints", playerNode.getNode("points", "mutepoints").getInt());

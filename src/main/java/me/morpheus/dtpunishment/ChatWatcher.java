@@ -1,11 +1,21 @@
 package me.morpheus.dtpunishment;
 
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.spongepowered.api.entity.living.player.Player;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChatWatcher {
 
@@ -15,22 +25,23 @@ public class ChatWatcher {
         this.main = main;
     }
 
-    ConfigurationNode rootNode = null;
-
+    ConfigurationNode chatNode = null;
 
     public boolean containBannedWords(String message){
 
+        Path potentialFile = Paths.get(main.getConfigPath() + "\\chat.conf");
+        ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(potentialFile).build();
         try {
-            rootNode = main.getDefaultConfigLoader().load();
+            this.chatNode = loader.load();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        String str = rootNode.getNode("chat", "banned", "words").getString();
+        String str = chatNode.getNode("banned", "words").getString();
         List<String> list  = Arrays.asList(str.split(","));
 
-        for (String l : list) {
-            if (message.replaceAll("[^\\w]", "").toLowerCase().trim().contains(l)){
+        for (String s : list) {
+            if (message.replaceAll("[^\\w]", "").toLowerCase().trim().contains(s)){
                 return true;
             }
         }
@@ -39,14 +50,16 @@ public class ChatWatcher {
 
     public boolean containUppercase(String message) {
 
+        Path potentialFile = Paths.get(main.getConfigPath() + "\\chat.conf");
+        ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(potentialFile).build();
         try {
-            rootNode = main.getDefaultConfigLoader().load();
+            this.chatNode = loader.load();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        int minimum = rootNode.getNode("chat", "caps", "minimum_lenght").getInt();
-        int percentage = rootNode.getNode("chat", "caps", "percentage").getInt();
+        int minimum = chatNode.getNode("caps", "minimum_lenght").getInt();
+        int percentage = chatNode.getNode("caps", "percentage").getInt();
 
         String[] words = message.split("\\s+");
         for (String word : words) {
@@ -62,6 +75,54 @@ public class ChatWatcher {
                     if (count > max) return true;
                 }
             }
+        }
+        return false;
+    }
+
+    Instant previous;
+    //God, forgive me, I will refactor this as soon as I can.
+    static ArrayList<String> me = new ArrayList<>();
+    static Map<Player, ArrayList<String>> map = new HashMap<>();
+
+    public boolean isSpam(String message, Player author, Instant last) {
+
+        Path potentialFile = Paths.get(main.getConfigPath() + "\\chat.conf");
+        ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(potentialFile).build();
+        try {
+            this.chatNode = loader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int seconds = chatNode.getNode("spam", "seconds").getInt();
+
+        if (previous != null && last.isAfter(previous.plusSeconds(seconds))) {
+            map.clear();
+            me.add(message);
+            map.put(author, me);
+            previous = last;
+            return false;
+        }
+
+        previous = last;
+        if (map.get(author) == null) {
+            me.add(message);
+            map.put(author, me);
+            return false;
+        } else {
+            map.get(author).add(message);
+        }
+
+        int count = 0;
+        for (String str : map.get(author)) {
+            if (str.equalsIgnoreCase(message)) {
+                count++;
+            }
+        }
+
+        int max = chatNode.getNode("spam", "max_messages").getInt() + 1;
+        if (count==max) {
+            return true;
         }
         return false;
     }
