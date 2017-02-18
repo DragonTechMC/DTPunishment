@@ -79,10 +79,9 @@ public class ChatWatcher {
         return false;
     }
 
-    Instant previous;
     //God, forgive me, I will refactor this as soon as I can.
-    static ArrayList<String> me = new ArrayList<>();
     static Map<Player, ArrayList<String>> map = new HashMap<>();
+    static Instant previous;
 
     public boolean isSpam(String message, Player author, Instant last) {
 
@@ -94,24 +93,24 @@ public class ChatWatcher {
             e.printStackTrace();
         }
 
+        ArrayList<String> me = new ArrayList<>();
+
         int seconds = chatNode.getNode("spam", "seconds").getInt();
 
-        if (previous != null && last.isAfter(previous.plusSeconds(seconds))) {
+        if (previous == null || last.isAfter(previous.plusSeconds(seconds))) {
             map.clear();
-            me.add(message);
-            map.put(author, me);
-            previous = last;
-            return false;
         }
 
         previous = last;
-        if (map.get(author) == null) {
+
+        if (map.get(author) != null) {
+            map.get(author).add(message);
+        } else {
             me.add(message);
             map.put(author, me);
             return false;
-        } else {
-            map.get(author).add(message);
         }
+
 
         int count = 0;
         for (String str : map.get(author)) {
@@ -121,10 +120,8 @@ public class ChatWatcher {
         }
 
         int max = chatNode.getNode("spam", "max_messages").getInt() + 1;
-        if (count==max) {
-            return true;
-        }
-        return false;
+
+        return count >= max;
     }
 
 
