@@ -5,6 +5,7 @@ import me.morpheus.dtpunishment.utils.DBUtil;
 import me.morpheus.dtpunishment.utils.Util;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.ban.BanService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -53,6 +54,13 @@ public class PunishmentManager {
                     .build();
             service.addBan(ban);
 
+            for (Player pl : Sponge.getServer().getOnlinePlayers()) {
+                Text message = Text.builder("[DTP] ").color(TextColors.GOLD).append(
+                        Text.builder(p + " has been banned for " + days + " days for exceeding "
+                                + rounded + " banpoint(s)").color(TextColors.RED).build()).build();
+                pl.sendMessage(message);
+            }
+
             if (ConfigUtil.DB_ENABLED) {
                 DBUtil.addBanpoints(p, -rounded);
             } else {
@@ -84,6 +92,14 @@ public class PunishmentManager {
                     playerNode.getNode("points", "mutepoints").setValue(actual - 5);
                     ConfigUtil.save(main.getConfigPath(), p, playerNode);
                 }
+
+                for (Player pl : Sponge.getServer().getOnlinePlayers()) {
+                    Text message = Text.builder("[DTP] ").color(TextColors.GOLD).append(
+                            Text.builder(p + " has been muted for " + minutes +
+                                    " minutes for exceeding 5 mutepoint(s)").color(TextColors.RED).build()).build();
+                    pl.sendMessage(message);
+                }
+
             } else if (amount > 9) {
                 int rounded = amount/10 * 10;
                 String period = rootNode.getNode("punishment", "mutepoints", rounded + " mutepoints").getString();
@@ -115,6 +131,14 @@ public class PunishmentManager {
                         playerNode.getNode("points", "mutepoints").setValue(actual - rounded);
                         ConfigUtil.save(main.getConfigPath(), p, playerNode);
                     }
+
+                    for (Player pl : Sponge.getServer().getOnlinePlayers()) {
+                        Text message = Text.builder("[DTP] ").color(TextColors.GOLD).append(
+                                Text.builder(p + " has been muted for " + minutes + " minutes for exceeding "
+                                        + rounded + " mutepoint(s)").color(TextColors.RED).build()).build();
+                        pl.sendMessage(message);
+                    }
+
                 }
             }
         }
