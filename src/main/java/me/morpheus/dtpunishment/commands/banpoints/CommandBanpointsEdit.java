@@ -55,14 +55,16 @@ public class CommandBanpointsEdit implements CommandExecutor {
             ConfigurationNode playerNode = ConfigUtil.getPlayerNode(main.getConfigPath(), name);
             int actual = playerNode.getNode("points", "banpoints").getInt();
             if (action.equalsIgnoreCase("remove")) {
-                playerNode.getNode("points", "banpoints").setValue(actual-amount);
-                user.get().getPlayer().get().sendMessage(Text.of(TextColors.AQUA, amount + " banpoints have been removed; you now have " + (actual-amount)));
-                src.sendMessage(Text.of(TextColors.AQUA, "You have removed " + amount + " banpoints from " + name + "; they now have " + (actual-amount)));
+                int total = actual - amount;
+                if (total<0) total=0;
+                playerNode.getNode("points", "banpoints").setValue(total);
+                user.get().getPlayer().get().sendMessage(Text.of(TextColors.AQUA, amount + " banpoints have been removed; you now have " + total));
+                src.sendMessage(Text.of(TextColors.AQUA, "You have removed " + amount + " banpoints from " + name + "; they now have " + total));
                 for (Player p : Sponge.getServer().getOnlinePlayers()) {
                     if (p.hasPermission("dtpunishment.staff.notify")) {
                         Text message = Text.builder("[DTP] ").color(TextColors.GOLD).append(
                                 Text.builder(src.getName() + " has removed " + amount + " banpoint(s) from "
-                                        + name +  "; they now have " + (actual-amount)).color(TextColors.AQUA).build()).build();
+                                        + name +  "; they now have " + total).color(TextColors.AQUA).build()).build();
                         p.sendMessage(message);
                     }
                 }

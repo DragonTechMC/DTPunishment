@@ -66,7 +66,9 @@ public class PunishmentManager {
             } else {
                 ConfigurationNode playerNode = ConfigUtil.getPlayerNode(main.getConfigPath(), p);
                 int actual = playerNode.getNode("points", "banpoints").getInt();
-                playerNode.getNode("points", "banpoints").setValue(actual - rounded);
+                int total = actual - rounded;
+                if (total<0) total=0;
+                playerNode.getNode("points", "banpoints").setValue(total);
                 ConfigUtil.save(main.getConfigPath(), p, playerNode);
             }
 
@@ -89,7 +91,9 @@ public class PunishmentManager {
                     playerNode.getNode("mute", "isMuted").setValue(true);
                     playerNode.getNode("mute", "until").setValue(String.valueOf(expiration));
                     int actual = playerNode.getNode("points", "mutepoints").getInt();
-                    playerNode.getNode("points", "mutepoints").setValue(actual - 5);
+                    int total = actual - 5;
+                    if (total<0) total=0;
+                    playerNode.getNode("points", "mutepoints").setValue(total);
                     ConfigUtil.save(main.getConfigPath(), p, playerNode);
                 }
 
@@ -128,7 +132,9 @@ public class PunishmentManager {
                         playerNode.getNode("mute", "isMuted").setValue(true);
                         playerNode.getNode("mute", "until").setValue(String.valueOf(expiration));
                         int actual = playerNode.getNode("points", "mutepoints").getInt();
-                        playerNode.getNode("points", "mutepoints").setValue(actual - rounded);
+                        int total = actual - rounded;
+                        if (total<0) total=0;
+                        playerNode.getNode("points", "mutepoints").setValue(total);
                         ConfigUtil.save(main.getConfigPath(), p, playerNode);
                     }
 

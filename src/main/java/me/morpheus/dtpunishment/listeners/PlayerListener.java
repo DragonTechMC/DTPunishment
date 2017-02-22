@@ -86,7 +86,9 @@ public class PlayerListener {
                         playerNode.getNode("points", "mutepoints").setValue(actualbp - 1);
                     }
                     if (actualmp != 0) {
-                        playerNode.getNode("points", "mutepoints").setValue(actualmp - 5);
+                        int total = actualmp - 5;
+                        if (total<0) total=0;
+                        playerNode.getNode("points", "mutepoints").setValue(total);
                     }
                     playerNode.getNode("points", "bonus_received").setValue(true);
 
@@ -123,7 +125,9 @@ public class PlayerListener {
                     playerNode.getNode("points", "mutepoints").setValue(actualbp - 1);
                 }
                 if (actualmp != 0) {
-                    playerNode.getNode("points", "mutepoints").setValue(actualmp - 5);
+                    int total = actualmp - 5;
+                    if (total<0) total=0;
+                    playerNode.getNode("points", "mutepoints").setValue(total);
                 }
                 try {
                     loader.save(playerNode);
