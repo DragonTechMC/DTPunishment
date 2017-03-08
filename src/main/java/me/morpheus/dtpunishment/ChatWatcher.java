@@ -1,13 +1,14 @@
 package me.morpheus.dtpunishment;
 
 import org.apache.commons.lang3.StringUtils;
-import org.spongepowered.api.entity.living.player.Player;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class ChatWatcher {
 
@@ -16,6 +17,9 @@ public class ChatWatcher {
     public ChatWatcher (DTPunishment main) {
         this.main = main;
     }
+
+    private static Map<UUID, List<String>> map = new HashMap<>();
+    private static Instant previous;
 
     public boolean containBannedWords(String message){
 
@@ -50,39 +54,27 @@ public class ChatWatcher {
         return false;
     }
 
-    //God, forgive me, I will refactor this as soon as I can.
-    static Map<Player, ArrayList<String>> map = new HashMap<>();
-    static Instant previous;
+    public boolean isSpam(String message, UUID author) {
 
-    public boolean isSpam(String message, Player author, Instant last) {
-
-
-
-        ArrayList<String> me = new ArrayList<>();
+        Instant now = Instant.now();
+        message = StringUtils.lowerCase(message);
 
         int seconds = main.getChatConfig().spam.seconds;
 
-        if (previous == null || last.isAfter(previous.plusSeconds(seconds))) {
-            map.clear();
-        }
+        if (previous == null || now.isAfter(previous.plusSeconds(seconds))) map.clear();
 
-        previous = last;
+        previous = now;
 
         if (map.get(author) != null) {
             map.get(author).add(message);
         } else {
-            me.add(message);
-            map.put(author, me);
+            List<String> messages = new ArrayList<>();
+            messages.add(message);
+            map.put(author, messages);
             return false;
         }
 
-
-        int count = 0;
-        for (String str : map.get(author)) {
-            if (str.equalsIgnoreCase(message)) {
-                count++;
-            }
-        }
+        int count = Collections.frequency(map.get(author), message);
 
         int max = main.getChatConfig().spam.max_messages + 1;
 

@@ -39,6 +39,7 @@ public class PlayerListener {
             main.getDatastore().createUser(event.getTargetEntity().getUniqueId());
         }
 
+        //TODO this method is screaming
         int day = LocalDateTime.now().toLocalDate().getDayOfMonth();
         if (day == 1) {
             File data = new File(main.getConfigPath() + "/data/");
@@ -132,9 +133,8 @@ public class PlayerListener {
                 event.setMessageCancelled(true);
             }
         } else {
-            Instant in = Instant.now();
 
-            if (chatw.isSpam(message, player, in)) {
+            if (chatw.isSpam(message, uuid)) {
                 int points = main.getChatConfig().spam.mutepoints;
                 main.getDatastore().addMutepoints(uuid, points);
                 event.setMessageCancelled(true);
