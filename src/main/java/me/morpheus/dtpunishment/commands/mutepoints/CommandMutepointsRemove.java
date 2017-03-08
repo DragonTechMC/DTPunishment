@@ -1,0 +1,64 @@
+package me.morpheus.dtpunishment.commands.mutepoints;
+
+import me.morpheus.dtpunishment.DTPunishment;
+import me.morpheus.dtpunishment.utils.Util;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandException;
+import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.spec.CommandExecutor;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public class CommandMutepointsRemove implements CommandExecutor {
+
+    private DTPunishment main;
+
+    public CommandMutepointsRemove(DTPunishment main){
+        this.main = main;
+    }
+
+
+    @Override
+    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        Optional<User> user = Util.getUser(args.<String>getOne("player").get());
+        if (!user.isPresent()) {
+            src.sendMessage(Text.of(args.<String>getOne("player").get() + " never joined your server "));
+            return CommandResult.empty();
+        }
+
+        UUID uuid = user.get().getUniqueId();
+        String name = user.get().getName();
+        int actual = main.getDatastore().getMutepoints(uuid);
+        int amount = args.<Integer>getOne("amount").get();
+
+        if (actual - amount < 0) amount = actual;
+        int total = actual - amount;
+
+        main.getDatastore().removeMutepoints(uuid, amount);
+        main.getDatastore().finish();
+
+        if (user.get().isOnline()) {
+            user.get().getPlayer().get().sendMessage(Text.of(TextColors.AQUA, amount + " mutepoints have been removed; you now have " + total));
+        }
+
+        src.sendMessage(Text.of(TextColors.AQUA, "You have removed " + amount + " mutepoints from " + name + "; they now have " + total));
+        for (Player p : Sponge.getServer().getOnlinePlayers()) {
+            if (p.hasPermission("dtpunishment.staff.notify")) {
+                Text message = Text.builder("[DTP] ").color(TextColors.GOLD).append(
+                        Text.builder(src.getName() + " has removed " + amount + " mutepoint(s) from "
+                                + name +  "; they now have " + total).color(TextColors.AQUA).build()).build();
+                p.sendMessage(message);
+            }
+        }
+
+        return CommandResult.success();
+
+    }
+}

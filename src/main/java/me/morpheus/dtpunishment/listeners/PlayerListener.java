@@ -3,9 +3,7 @@ package me.morpheus.dtpunishment.listeners;
 
 import me.morpheus.dtpunishment.ChatWatcher;
 import me.morpheus.dtpunishment.DTPunishment;
-import me.morpheus.dtpunishment.PunishmentManager;
-import me.morpheus.dtpunishment.utils.ConfigUtil;
-import me.morpheus.dtpunishment.utils.DBUtil;
+import me.morpheus.dtpunishment.penalty.MutepointsPunishment;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -21,11 +19,9 @@ import org.spongepowered.api.text.format.TextColors;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class PlayerListener {
 
@@ -38,34 +34,12 @@ public class PlayerListener {
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
 
-
-        if (ConfigUtil.DB_ENABLED) {
-            if (!DBUtil.userExists(event.getTargetEntity().getName())) {
-                DBUtil.createUser(event.getTargetEntity().getName());
-            }
-        } else {
-            Player p = event.getTargetEntity();
-            Path playerData = Paths.get(main.getConfigPath() + "/data/" + p.getName() + ".conf");
-            if (Files.notExists(playerData)) {
-                main.getLogger().info("No data file has been found for " + p.getName());
-                main.getLogger().info("Creating player file");
-                try {
-                    Files.createFile(playerData);
-                    ConfigurationNode playerNode = ConfigUtil.getPlayerNode(main.getConfigPath(), p.getName());
-                    playerNode.getNode("points", "banpoints").setValue(0);
-                    playerNode.getNode("points", "mutepoints").setValue(0);
-                    playerNode.getNode("mute", "isMuted").setValue(false);
-                    ConfigUtil.save(main.getConfigPath(), p.getName(), playerNode);
-                    main.getLogger().info("Success");
-                } catch (IOException e) {
-                    main.getLogger().info("Error while creating player file");
-                    e.printStackTrace();
-                }
-            }
+        if (!main.getDatastore().userExists(event.getTargetEntity().getUniqueId())) {
+            main.getLogger().info(event.getTargetEntity().getName() + " not found, creating player data...");
+            main.getDatastore().createUser(event.getTargetEntity().getUniqueId());
         }
 
         int day = LocalDateTime.now().toLocalDate().getDayOfMonth();
-        main.getLogger().info(""+day+main.getConfigPath());
         if (day == 1) {
             File data = new File(main.getConfigPath() + "/data/");
             for (File f : data.listFiles()) {
@@ -141,140 +115,79 @@ public class PlayerListener {
 
     @Listener
     public void onPlayerChat(MessageChannelEvent.Chat event, @Root Player player){
-        ConfigurationNode rootNode = null;
-        try {
-            rootNode = main.getDefaultConfigLoader().load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         String message = event.getRawMessage().toPlain();
+        UUID uuid = player.getUniqueId();
+
         ChatWatcher chatw = new ChatWatcher(main);
 
 
-        if (ConfigUtil.DB_ENABLED) {
-            if (DBUtil.isMuted(player.getName())) {
-                Instant expiration = Instant.parse(DBUtil.getUntil(player.getName()));
-                if (Instant.now().isAfter(expiration)) {
-                    DBUtil.unmute(player.getName());
-                } else {
-                    main.getLogger().info("[Message cancelled] - " + event.getMessage().toPlain());
-                    event.setMessageCancelled(true);
-                }
+        if (main.getDatastore().isMuted(uuid)) {
+            Instant expiration = main.getDatastore().getExpiration(uuid);
+
+            if (Instant.now().isAfter(expiration)) {
+                main.getDatastore().unmute(uuid);
             } else {
-                if (chatw.containBannedWords(message)) {
-                    int points = rootNode.getNode("chat", "banned", "mutepoints").getInt();
-                    DBUtil.addMutepoints(player.getName(), points);
-                    player.sendMessage(Text.of(TextColors.RED, "You said a banned word; " +
-                            points + " mutepoint(s) have been added automatically, you now have " +
-                            DBUtil.getMutepoints(player.getName()) +
-                            ". If you believe this is an error, contact a staff member."));
-                    for (Player p : Sponge.getServer().getOnlinePlayers()) {
-                        if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " said a banned word; " +
-                                    points + " mutepoint(s) have been added automatically, they now have " +
-                                    DBUtil.getMutepoints(player.getName())));
-                        }
-                    }
-                    event.setMessageCancelled(true);
-                }
-
-                if (chatw.containUppercase(message)) {
-                    int points = rootNode.getNode("chat", "caps", "mutepoints").getInt();
-                    DBUtil.addMutepoints(player.getName(), points);
-                    player.sendMessage(Text.of(TextColors.RED, "You have exceeded the max percentage of caps allowed; " +
-                            points + " mutepoint(s) have been added automatically, you now have " +
-                            DBUtil.getMutepoints(player.getName()) +
-                            ". If you believe this is an error, contact a staff member."));
-                    for (Player p : Sponge.getServer().getOnlinePlayers()) {
-                        if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(player.getName() + " has exceeded the max percentage of caps allowed; " +
-                                    points + " mutepoint(s) have been added automatically, they now have " +
-                                    DBUtil.getMutepoints(player.getName())));
-                        }
-                    }
-                    event.setMessageCancelled(true);
-                }
-
-                PunishmentManager pm = new PunishmentManager(main);
-                pm.checkPenalty(player.getName(), "mutepoints", DBUtil.getMutepoints(player.getName()));
+                main.getLogger().info("[Message cancelled] - " + event.getMessage().toPlain());
+                event.setMessageCancelled(true);
             }
         } else {
-            ConfigurationNode playerNode = ConfigUtil.getPlayerNode(main.getConfigPath(), player.getName());
-            boolean isMuted = playerNode.getNode("mute", "isMuted").getBoolean();
+            Instant in = Instant.now();
 
-            Path potentialFile = Paths.get(main.getConfigPath()+ "/chat.conf");
-            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(potentialFile).build();
-            ConfigurationNode chatNode = null;
-
-            try {
-                chatNode = loader.load();
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (chatw.isSpam(message, player, in)) {
+                int points = main.getChatConfig().spam.mutepoints;
+                main.getDatastore().addMutepoints(uuid, points);
+                event.setMessageCancelled(true);
             }
 
-            if (isMuted) {
-                Instant expiration = Instant.parse(playerNode.getNode("mute", "until").getString());
-                if (Instant.now().isAfter(expiration)) {
-                    playerNode.getNode("mute", "isMuted").setValue(false);
-                    playerNode.getNode("mute").removeChild("until");
-                    ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
-                } else {
-                    main.getLogger().info("[Message cancelled] - " + event.getMessage().toPlain());
-                    event.setMessageCancelled(true);
-                }
-            } else {
+            if (chatw.containBannedWords(message)) {
+                int points = main.getChatConfig().banned.mutepoints;
+                main.getDatastore().addMutepoints(uuid, points);
 
-                Instant in = Instant.now();
-                if (chatw.isSpam(message, player, in)) {
-                    int points = chatNode.getNode("spam", "mutepoints").getInt();
-                    int actual = playerNode.getNode("points", "mutepoints").getInt();
-                    playerNode.getNode("points", "mutepoints").setValue(actual + points);
-                    ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
-                    event.setMessageCancelled(true);
-                }
+                player.sendMessage(Text.of(TextColors.RED, "You said a banned word; " +
+                        points + " mutepoint(s) have been added automatically, you now have " +
+                        main.getDatastore().getMutepoints(uuid) +
+                        ". If you believe this is an error, contact a staff member."));
 
-                if (chatw.containBannedWords(message)) {
-                    int points = chatNode.getNode("banned", "mutepoints").getInt();
-                    int actual = playerNode.getNode("points", "mutepoints").getInt();
-                    playerNode.getNode("points", "mutepoints").setValue(actual + points);
-                    ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
-                    player.sendMessage(Text.of(TextColors.RED, "You said a banned word; " +
-                            points + " mutepoint(s) have been added automatically, you now have " +
-                            playerNode.getNode("points", "mutepoints").getInt() +
-                            ". If you believe this is an error, contact a staff member."));
-                    for (Player p : Sponge.getServer().getOnlinePlayers()) {
-                        if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " said a banned word; " +
-                                    points + " mutepoint(s) have been added automatically, they now have " +
-                                    playerNode.getNode("points", "mutepoints").getInt()));
-                        }
+                for (Player p : Sponge.getServer().getOnlinePlayers()) {
+                    if (p.hasPermission("dtpunishment.staff.notify")) {
+                        p.sendMessage(Text.of(TextColors.RED, player.getName() + " said a banned word; " +
+                                points + " mutepoint(s) have been added automatically, they now have " +
+                                main.getDatastore().getMutepoints(uuid)));
                     }
-                    event.setMessageCancelled(true);
                 }
 
-                if (chatw.containUppercase(message)) {
-                    int points = chatNode.getNode("caps", "mutepoints").getInt();
-                    int actual = playerNode.getNode("points", "mutepoints").getInt();
-                    playerNode.getNode("points", "mutepoints").setValue(actual + points);
-                    ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
-                    player.sendMessage(Text.of(TextColors.RED, "You have exceeded the max percentage of caps allowed; " +
-                            points + " mutepoint(s) have been added automatically, you now have " +
-                            playerNode.getNode("points", "mutepoints").getInt() +
-                            ". If you believe this is an error, contact a staff member."));
-                    for (Player p : Sponge.getServer().getOnlinePlayers()) {
-                        if (p.hasPermission("dtpunishment.staff.notify")) {
-                            p.sendMessage(Text.of(TextColors.RED, player.getName() + " has exceeded the max percentage of caps allowed;  " +
-                                    points + " mutepoint(s) have been added automatically, they now have " +
-                                    playerNode.getNode("points", "mutepoints").getInt()));
-                        }
-                    }
-                    event.setMessageCancelled(true);
-                }
+                event.setMessageCancelled(true);
 
-                PunishmentManager pm = new PunishmentManager(main);
-                pm.checkPenalty(player.getName(), "mutepoints", playerNode.getNode("points", "mutepoints").getInt());
             }
+
+            if (chatw.containUppercase(message)) {
+                int points = main.getChatConfig().caps.mutepoints;
+
+                main.getDatastore().addMutepoints(uuid, points);
+
+                player.sendMessage(Text.of(TextColors.RED, "You have exceeded the max percentage of caps allowed; " +
+                        points + " mutepoint(s) have been added automatically, you now have " +
+                        main.getDatastore().getMutepoints(uuid) +
+                        ". If you believe this is an error, contact a staff member."));
+                for (Player p : Sponge.getServer().getOnlinePlayers()) {
+                    if (p.hasPermission("dtpunishment.staff.notify")) {
+                        p.sendMessage(Text.of(TextColors.RED, player.getName() + " has exceeded the max percentage of caps allowed;  " +
+                                points + " mutepoint(s) have been added automatically, they now have " +
+                                main.getDatastore().getMutepoints(uuid)));
+                    }
+                }
+                event.setMessageCancelled(true);
+            }
+
+
+
+            MutepointsPunishment mutepunish = new MutepointsPunishment(main);
+
+            mutepunish.check(uuid, main.getDatastore().getMutepoints(uuid));
+
+            main.getDatastore().finish();
+
         }
     }
 
