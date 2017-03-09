@@ -1,6 +1,6 @@
 plugins {
     id 'org.spongepowered.plugin' version '0.8.1'
-    id "com.qixalite.spongestart" version "1.5.2"
+    id "com.qixalite.spongestart" version "1.6.0"
     id "java"
 }
 
@@ -18,14 +18,11 @@ repositories {
 
 spongestart{
     eula true
-    spongeVanillaBuild '1.10.2-5.1.0-BETA-371'
-    spongeForgeBuild '1.10.2-2221-5.1.0-BETA-2136'
-    forgeServerFolder 'run/forge'
-    vanillaServerFolder 'run/vanilla'
+    spongeForgeVersion '1.10.2-2221-5.2.0-BETA-2223'
 }
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:5.0.0'
+    compile 'org.spongepowered:spongeapi:5.2.0-SNAPSHOT'
 }
 
 sponge.plugin.id = pluginId
