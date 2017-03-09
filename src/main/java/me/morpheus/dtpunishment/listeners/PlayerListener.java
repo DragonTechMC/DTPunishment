@@ -84,8 +84,8 @@ public class PlayerListener {
                 if (chatw.containBannedWords(message)) {
                     int points = rootNode.getNode("chat", "banned", "mutepoints").getInt();
                     DBUtil.addMutepoints(player.getName(), points);
-                    player.sendMessage(Text.of("You said a banned word. " +
-                            points + " mutepoints have been added automatically, you now have " +
+                    player.sendMessage(Text.of(TextColors.RED,"You said a banned word; " +
+                            points + " mutepoint(s) have been added automatically, you now have " +
                             DBUtil.getMutepoints(player.getName()) +
                             ". If you believe this is an error, contact a staff member."));
                     event.setMessageCancelled(true);
@@ -94,7 +94,7 @@ public class PlayerListener {
                 if (chatw.containUppercase(message)) {
                     int points = rootNode.getNode("chat", "caps", "mutepoints").getInt();
                     DBUtil.addMutepoints(player.getName(), points);
-                    player.sendMessage(Text.of("You are not allowed to send messages in caps, " +
+                    player.sendMessage(Text.of(TextColors.RED,"You have exceeded the max percentage of caps allowed; " +
                             points + " mutepoints have been added automatically, you now have " +
                             DBUtil.getMutepoints(player.getName()) +
                             ". If you believe this is an error, contact a staff member."));
@@ -125,8 +125,8 @@ public class PlayerListener {
                     int actual = playerNode.getNode("points", "mutepoints").getInt();
                     playerNode.getNode("points", "mutepoints").setValue(actual + points);
                     ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
-                    player.sendMessage(Text.of("You said a banned word. " +
-                            points + " mutepoints have been added automatically, you now have " +
+                    player.sendMessage(Text.of(TextColors.RED,"You said a banned word; " +
+                            points + " mutepoint(s) have been added automatically, you now have " +
                             playerNode.getNode("points", "mutepoints").getInt() +
                             ". If you believe this is an error, contact a staff member."));
                     event.setMessageCancelled(true);
@@ -137,8 +137,8 @@ public class PlayerListener {
                     int actual = playerNode.getNode("points", "mutepoints").getInt();
                     playerNode.getNode("points", "mutepoints").setValue(actual + points);
                     ConfigUtil.save(main.getConfigPath(), player.getName(), playerNode);
-                    player.sendMessage(Text.of("You are not allowed to send messages in caps, " +
-                            points + " mutepoints have been added automatically, you now have " +
+                    player.sendMessage(Text.of(TextColors.RED,"You have exceeded the max percentage of caps allowed; " +
+                            points + " mutepoint(s) have been added automatically, you now have " +
                             playerNode.getNode("points", "mutepoints").getInt() +
                             ". If you believe this is an error, contact a staff member."));
                     event.setMessageCancelled(true);
