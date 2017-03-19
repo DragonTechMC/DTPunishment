@@ -33,25 +33,30 @@ public class ChatWatcher {
 
     public boolean containUppercase(String message) {
 
-        int minimum = main.getChatConfig().caps.minimum_lenght;
+        int minimum = main.getChatConfig().caps.minimum_length;
         int percentage = main.getChatConfig().caps.percentage;
 
+        if (message.replaceAll("[\\W]", "").length() <= minimum) return false;
+
         String[] words = message.split("\\s+");
+        int upper = 0;
+        int total = 0;
+
         for (String word : words) {
             String cleaned = word.replaceAll("[\\W]", "");
 
-            if (word.length() <= minimum || StringUtils.isAllLowerCase(cleaned)) continue;
-            if (StringUtils.isAllUpperCase(cleaned)) return true;
+            total += cleaned.length();
 
-            int count = 0;
+            if (StringUtils.isAllLowerCase(cleaned)) continue;
+
             for (int i = 0; i < cleaned.length(); i++) {
-                if (Character.isUpperCase(cleaned.charAt(i))) count++;
+                if (Character.isUpperCase(cleaned.charAt(i))) upper++;
             }
-            int max = cleaned.length() / (100/percentage);
-            if (count > max) return true;
-        }
 
-        return false;
+        }
+        int max = (percentage * total) / 100;
+        return upper > max;
+
     }
 
     public boolean isSpam(String message, UUID author) {

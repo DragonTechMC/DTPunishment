@@ -26,7 +26,7 @@ public class ChatConfig {
     @ConfigSerializable
     public static class Caps {
         @Setting public int mutepoints;
-        @Setting public int minimum_lenght;
+        @Setting public int minimum_length;
         @Setting public int percentage;
     }
 
