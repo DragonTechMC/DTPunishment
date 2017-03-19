@@ -1,6 +1,7 @@
 package me.morpheus.dtpunishment.data;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public abstract class DataStore {
@@ -9,15 +10,15 @@ public abstract class DataStore {
 
     public abstract int getBanpoints(UUID player);
 
+    public abstract LocalDate getBanpointsUpdatedAt(UUID player);
+
     public abstract int getMutepoints(UUID player);
+
+    public abstract LocalDate getMutepointsUpdatedAt(UUID player);
 
     public abstract boolean isMuted(UUID player);
 
     public abstract Instant getExpiration(UUID player);
-
-    public abstract boolean hasReceivedBonus(UUID player);
-
-    public abstract void giveBonus(UUID player);
 
     public abstract void addBanpoints(UUID player, int amount);
 

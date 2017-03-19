@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public class FileDataStore extends DataStore {
@@ -32,7 +33,7 @@ public class FileDataStore extends DataStore {
         }
     }
 
-    private void initPlayerConfig(UUID player){
+    private void initPlayerConfig(UUID player) {
         Path playerData = Paths.get(main.getConfigPath() + "/data/" + player + ".conf");
         loader = HoconConfigurationLoader.builder().setPath(playerData).build();
         try {
@@ -63,9 +64,23 @@ public class FileDataStore extends DataStore {
     }
 
     @Override
+    public LocalDate getBanpointsUpdatedAt(UUID player) {
+        initPlayerConfig(player);
+        String bUpdatedAt = node.getNode("points", "bUpdatedAt").getString();
+        return LocalDate.parse(bUpdatedAt);
+    }
+
+    @Override
     public int getMutepoints(UUID player) {
         initPlayerConfig(player);
         return node.getNode("points", "mutepoints").getInt();
+    }
+
+    @Override
+    public LocalDate getMutepointsUpdatedAt(UUID player) {
+        initPlayerConfig(player);
+        String mUpdatedAt = node.getNode("points", "mUpdatedAt").getString();
+        return LocalDate.parse(mUpdatedAt);
     }
 
     @Override
@@ -82,21 +97,12 @@ public class FileDataStore extends DataStore {
     }
 
     @Override
-    public boolean hasReceivedBonus(UUID player) {
-        initPlayerConfig(player);
-        return node.getNode("points", "bonus_received").getBoolean();
-    }
-
-    @Override
-    public void giveBonus(UUID player) {
-
-    }
-
-    @Override
     public void addBanpoints(UUID player, int amount) {
         initPlayerConfig(player);
         int actual = getBanpoints(player);
         node.getNode("points", "banpoints").setValue(actual + amount);
+        String now = String.valueOf(LocalDate.now());
+        node.getNode("points", "bUpdatedAt").setValue(now);
         save();
     }
 
@@ -113,6 +119,8 @@ public class FileDataStore extends DataStore {
         initPlayerConfig(player);
         int actual = getMutepoints(player);
         node.getNode("points", "mutepoints").setValue(actual + amount);
+        String now = String.valueOf(LocalDate.now());
+        node.getNode("points", "mUpdatedAt").setValue(now);
         save();
     }
 

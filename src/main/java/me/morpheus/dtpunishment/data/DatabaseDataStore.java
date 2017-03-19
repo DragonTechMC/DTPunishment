@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,15 +44,15 @@ public class DatabaseDataStore extends DataStore {
     public void init() {
         try {
             conn = getDataSource(getJdbcUrl()).getConnection();
-            conn.prepareStatement("CREATE TABLE IF NOT EXISTS dtpunishment\n" +
-                    "(\n" +
+            conn.prepareStatement("CREATE TABLE IF NOT EXISTS dtpunishment (\n" +
                     "ID int NOT NULL AUTO_INCREMENT,\n" +
                     "UUID varchar(64) NOT NULL,\n" +
                     "Banpoints SMALLINT,\n" +
+                    "BanUpdatedAt VARCHAR(32),\n"+
                     "Mutepoints SMALLINT,\n" +
-                    "bonus_received boolean,\n" +
-                    "isMuted boolean,\n" +
-                    "Until varchar(32),\n" +
+                    "MuteUpdatedAt VARCHAR(32),\n" +
+                    "IsMuted BOOLEAN,\n" +
+                    "Until VARCHAR(32),\n" +
                     "PRIMARY KEY (ID)\n" +
                     ")").executeQuery();
         } catch (SQLException e) {
@@ -73,6 +74,20 @@ public class DatabaseDataStore extends DataStore {
     }
 
     @Override
+    public LocalDate getBanpointsUpdatedAt(UUID player) {
+        try {
+            conn = getDataSource(getJdbcUrl()).getConnection();
+            ResultSet set = conn.prepareStatement("SELECT BanUpdatedAt FROM dtpunishment WHERE UUID=\"" + player + "\";").executeQuery();
+            set.next();
+            return LocalDate.parse(set.getString("BanUpdatedAt"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    @Override
     public int getMutepoints(UUID player) {
         try {
             conn = getDataSource(getJdbcUrl()).getConnection();
@@ -86,12 +101,26 @@ public class DatabaseDataStore extends DataStore {
     }
 
     @Override
+    public LocalDate getMutepointsUpdatedAt(UUID player) {
+        try {
+            conn = getDataSource(getJdbcUrl()).getConnection();
+            ResultSet set = conn.prepareStatement("SELECT MuteUpdatedAt FROM dtpunishment WHERE UUID=\"" + player + "\";").executeQuery();
+            set.next();
+            return LocalDate.parse(set.getString("MuteUpdatedAt"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    @Override
     public boolean isMuted(UUID player) {
         try {
             conn = getDataSource(getJdbcUrl()).getConnection();
-            ResultSet set = conn.prepareStatement("SELECT isMuted FROM dtpunishment WHERE UUID=\""+player+"\";").executeQuery();
+            ResultSet set = conn.prepareStatement("SELECT IsMuted FROM dtpunishment WHERE UUID=\""+player+"\";").executeQuery();
             set.next();
-            return set.getBoolean("isMuted");
+            return set.getBoolean("IsMuted");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -111,29 +140,15 @@ public class DatabaseDataStore extends DataStore {
         return null;
     }
 
-    @Override
-    public boolean hasReceivedBonus(UUID player) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
-            ResultSet set = conn.prepareStatement("SELECT bonus_received FROM dtpunishment WHERE UUID=\""+player+"\";").executeQuery();
-            set.next();
-            return set.getBoolean("bonus_received");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
-    @Override
-    public void giveBonus(UUID player) {
-
-    }
 
     @Override
     public void addBanpoints(UUID player, int amount) {
         try {
             conn = getDataSource(getJdbcUrl()).getConnection();
             conn.prepareStatement("UPDATE dtpunishment SET Banpoints = Banpoints + "+amount+" WHERE UUID=\""+player+"\";").executeUpdate();
+            conn.prepareStatement("UPDATE dtpunishment SET BanUpdatedAt = "+LocalDate.now()+" WHERE UUID=\""+player+"\";").executeUpdate();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -155,6 +170,7 @@ public class DatabaseDataStore extends DataStore {
         try {
             conn = getDataSource(getJdbcUrl()).getConnection();
             conn.prepareStatement("UPDATE dtpunishment SET Mutepoints = Mutepoints + "+amount+" WHERE UUID=\""+player+"\";").executeUpdate();
+            conn.prepareStatement("UPDATE dtpunishment SET MuteUpdatedAt = "+LocalDate.now()+" WHERE UUID=\""+player+"\";").executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -174,7 +190,7 @@ public class DatabaseDataStore extends DataStore {
     public void mute(UUID player, Instant expiration) {
         try {
             conn = getDataSource(getJdbcUrl()).getConnection();
-            conn.prepareStatement("UPDATE dtpunishment SET isMuted = 1, Until = "+expiration+" WHERE UUID=\""+player+"\";").executeUpdate();
+            conn.prepareStatement("UPDATE dtpunishment SET IsMuted = 1, Until = "+expiration+" WHERE UUID=\""+player+"\";").executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -185,7 +201,7 @@ public class DatabaseDataStore extends DataStore {
     public void unmute(UUID player) {
         try {
             conn = getDataSource(getJdbcUrl()).getConnection();
-            conn.prepareStatement("UPDATE dtpunishment SET isMuted = 0, Until = null WHERE UUID=\""+player+"\";").executeUpdate();
+            conn.prepareStatement("UPDATE dtpunishment SET IsMuted = 0, Until = null WHERE UUID=\""+player+"\";").executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -195,7 +211,7 @@ public class DatabaseDataStore extends DataStore {
     public void createUser(UUID player) {
         try {
             conn = getDataSource(getJdbcUrl()).getConnection();
-            conn.prepareStatement("INSERT INTO dtpunishment (UUID,Banpoints,Mutepoints,isMuted)\n" +
+            conn.prepareStatement("INSERT INTO dtpunishment (UUID,Banpoints,Mutepoints,IsMuted)\n" +
                     "VALUES ('"+player+"',0,0,false)").executeQuery();
         } catch (SQLException e) {
             e.printStackTrace();

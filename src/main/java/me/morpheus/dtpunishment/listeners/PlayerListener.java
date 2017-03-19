@@ -4,10 +4,6 @@ package me.morpheus.dtpunishment.listeners;
 import me.morpheus.dtpunishment.ChatWatcher;
 import me.morpheus.dtpunishment.DTPunishment;
 import me.morpheus.dtpunishment.penalty.MutepointsPunishment;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -17,10 +13,8 @@ import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public class PlayerListener {
@@ -34,83 +28,29 @@ public class PlayerListener {
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
 
-        if (!main.getDatastore().userExists(event.getTargetEntity().getUniqueId())) {
+        UUID uuid = event.getTargetEntity().getUniqueId();
+        if (!main.getDatastore().userExists(uuid)) {
             main.getLogger().info(event.getTargetEntity().getName() + " not found, creating player data...");
-            main.getDatastore().createUser(event.getTargetEntity().getUniqueId());
-        }
-
-        //TODO this method is screaming
-        int day = LocalDateTime.now().toLocalDate().getDayOfMonth();
-        if (day == 1) {
-            File data = new File(main.getConfigPath() + "/data/");
-            for (File f : data.listFiles()) {
-                ConfigurationLoader<CommentedConfigurationNode> loader =
-                        HoconConfigurationLoader.builder().setPath(f.toPath()).build();
-                ConfigurationNode playerNode = null;
-                try {
-                    playerNode = loader.load();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                boolean received = playerNode.getNode("points", "bonus_received").getBoolean();
-                if (!received) {
-                    int actualmp = playerNode.getNode("points", "mutepoints").getInt();
-                    int actualbp = playerNode.getNode("points", "banpoints").getInt();
-                    if (actualbp != 0) {
-                        playerNode.getNode("points", "mutepoints").setValue(actualbp - 1);
-                    }
-                    if (actualmp != 0) {
-                        int total = actualmp - 5;
-                        if (total<0) total=0;
-                        playerNode.getNode("points", "mutepoints").setValue(total);
-                    }
-                    playerNode.getNode("points", "bonus_received").setValue(true);
-
-                    try {
-                        loader.save(playerNode);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+            main.getDatastore().createUser(uuid);
+        } else {
+            LocalDate now = LocalDate.now();
+            if (now.isAfter(main.getDatastore().getMutepointsUpdatedAt(uuid).plusMonths(1))) {
+                int actual = main.getDatastore().getMutepoints(uuid);
+                int amount = (actual - 5 < 0) ? actual : 5;
+                main.getDatastore().removeMutepoints(uuid, amount);
+                main.getDatastore().addMutepoints(uuid, 0);
             }
-        } else if (day == 2) {
-            File data = new File(main.getConfigPath() + "/data/");
-            for (File f : data.listFiles()) {
-                ConfigurationLoader<CommentedConfigurationNode> loader =
-                        HoconConfigurationLoader.builder().setPath(f.toPath()).build();
-                ConfigurationNode playerNode = null;
-                try {
-                    playerNode = loader.load();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                boolean received = playerNode.getNode("points", "bonus_received").getBoolean();
-                if (received) {
-                    playerNode.getNode("points", "bonus_received").setValue(false);
-                    try {
-                        loader.save(playerNode);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                int actualmp = playerNode.getNode("points", "mutepoints").getInt();
-                int actualbp = playerNode.getNode("points", "banpoints").getInt();
-                if (actualbp != 0) {
-                    playerNode.getNode("points", "mutepoints").setValue(actualbp - 1);
-                }
-                if (actualmp != 0) {
-                    int total = actualmp - 5;
-                    if (total<0) total=0;
-                    playerNode.getNode("points", "mutepoints").setValue(total);
-                }
-                try {
-                    loader.save(playerNode);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            if (now.isAfter(main.getDatastore().getBanpointsUpdatedAt(uuid).plusMonths(1))) {
+                int actual = main.getDatastore().getBanpoints(uuid);
+                int amount = (actual - 1 < 0) ? actual : 1;
+                main.getDatastore().removeBanpoints(uuid, amount);
+                main.getDatastore().addBanpoints(uuid, 0);
             }
         }
+
+        main.getDatastore().finish();
+
+
     }
 
 

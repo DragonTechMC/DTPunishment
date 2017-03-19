@@ -96,7 +96,6 @@ public class DTPunishment {
         ConfigurationManager config = new ConfigurationManager(this);
         config.generateConfig();
 
-
         try {
             Path potentialFile = Paths.get(getConfigPath() + "\\chat.conf");
             ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(potentialFile).build();
