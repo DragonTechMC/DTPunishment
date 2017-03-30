@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 public class ConfigurationManager {
 
-    private DTPunishment main;
+    private final DTPunishment main;
 
 
     public ConfigurationManager(DTPunishment main) {

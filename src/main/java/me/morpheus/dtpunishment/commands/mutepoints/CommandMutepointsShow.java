@@ -15,7 +15,7 @@ import java.util.UUID;
 
 public class CommandMutepointsShow implements CommandExecutor {
 
-    private DTPunishment main;
+    private final DTPunishment main;
 
     public CommandMutepointsShow(DTPunishment main){
         this.main = main;

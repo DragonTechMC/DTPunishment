@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public class MutepointsPunishment {
 
-    private DTPunishment main;
+    private final DTPunishment main;
 
     public MutepointsPunishment(DTPunishment main) {
         this.main = main;

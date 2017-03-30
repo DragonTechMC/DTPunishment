@@ -19,7 +19,7 @@ import java.util.UUID;
 
 public class CommandBanpointsAdd implements CommandExecutor {
 
-    private DTPunishment main;
+    private final DTPunishment main;
 
     public CommandBanpointsAdd(DTPunishment main){
         this.main = main;

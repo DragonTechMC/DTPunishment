@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public class FileDataStore extends DataStore {
 
-    private DTPunishment main;
+    private final DTPunishment main;
 
     public FileDataStore(DTPunishment main) {
         this.main = main;
@@ -158,7 +158,9 @@ public class FileDataStore extends DataStore {
             e.printStackTrace();
         }
         initPlayerConfig(player);
+        node.getNode("points", "bUpdatedAt").setValue(String.valueOf(LocalDate.now()));
         node.getNode("points", "banpoints").setValue(0);
+        node.getNode("points", "mUpdatedAt").setValue(String.valueOf(LocalDate.now()));
         node.getNode("points", "mutepoints").setValue(0);
         node.getNode("mute", "isMuted").setValue(false);
         save();

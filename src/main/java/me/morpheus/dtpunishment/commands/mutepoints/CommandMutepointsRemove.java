@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public class CommandMutepointsRemove implements CommandExecutor {
 
-    private DTPunishment main;
+    private final DTPunishment main;
 
     public CommandMutepointsRemove(DTPunishment main){
         this.main = main;

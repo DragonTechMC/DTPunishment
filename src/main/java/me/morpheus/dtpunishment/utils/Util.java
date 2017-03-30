@@ -14,7 +14,7 @@ public class Util {
         return userStorage.get().get(uuid);
     }
 
-//temp and deprecated
+    @Deprecated
     public static Optional<User> getUser(String player) {
         Optional<UserStorageService> userStorage = Sponge.getServiceManager().provide(UserStorageService.class);
         return userStorage.get().get(player);

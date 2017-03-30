@@ -19,7 +19,7 @@ import java.util.UUID;
 
 public class PlayerListener {
 
-    private DTPunishment main;
+    private final DTPunishment main;
 
     public PlayerListener(DTPunishment main){
         this.main = main;
@@ -34,13 +34,13 @@ public class PlayerListener {
             main.getDatastore().createUser(uuid);
         } else {
             LocalDate now = LocalDate.now();
-            if (main.getDatastore().getMutepointsUpdatedAt(uuid) != null && now.isAfter(main.getDatastore().getMutepointsUpdatedAt(uuid).plusMonths(1))) {
+            if (now.isAfter(main.getDatastore().getMutepointsUpdatedAt(uuid).plusMonths(1))) {
                 int actual = main.getDatastore().getMutepoints(uuid);
                 int amount = (actual - 5 < 0) ? actual : 5;
                 main.getDatastore().removeMutepoints(uuid, amount);
                 main.getDatastore().addMutepoints(uuid, 0);
             }
-            if (main.getDatastore().getBanpointsUpdatedAt(uuid) != null && now.isAfter(main.getDatastore().getBanpointsUpdatedAt(uuid).plusMonths(1))) {
+            if (now.isAfter(main.getDatastore().getBanpointsUpdatedAt(uuid).plusMonths(1))) {
                 int actual = main.getDatastore().getBanpoints(uuid);
                 int amount = (actual - 1 < 0) ? actual : 1;
                 main.getDatastore().removeBanpoints(uuid, amount);

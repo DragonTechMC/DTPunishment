@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public class ChatWatcher {
 
-    private DTPunishment main;
+    private final DTPunishment main;
 
     public ChatWatcher (DTPunishment main) {
         this.main = main;

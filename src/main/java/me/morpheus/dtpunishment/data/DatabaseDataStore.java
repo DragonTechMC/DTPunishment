@@ -15,7 +15,7 @@ import java.util.UUID;
 
 public class DatabaseDataStore extends DataStore {
 
-    private DTPunishment main;
+    private final DTPunishment main;
 
     public DatabaseDataStore(DTPunishment main){
         this.main = main;
