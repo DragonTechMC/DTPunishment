@@ -36,10 +36,4 @@ public class ChatConfig {
         @Setting public int seconds;
         @Setting public int mutepoints;
     }
-
-
-
-
-
-
 }

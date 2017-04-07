@@ -2,6 +2,7 @@ package me.morpheus.dtpunishment;
 
 import com.google.inject.Inject;
 import me.morpheus.dtpunishment.commands.CommandPlayerInfo;
+import me.morpheus.dtpunishment.commands.CommandReloadConfig;
 import me.morpheus.dtpunishment.commands.CommandWordAdd;
 import me.morpheus.dtpunishment.commands.banpoints.CommandBanpointsAdd;
 import me.morpheus.dtpunishment.commands.banpoints.CommandBanpointsRemove;
@@ -95,7 +96,11 @@ public class DTPunishment {
         getLogger().info("Config check...");
         ConfigurationManager config = new ConfigurationManager(this);
         config.generateConfig();
+        reloadConfiguration();      
+        config.init();
+    }
 
+    public void reloadConfiguration() {
         try {
             Path potentialFile = Paths.get(getConfigPath() + "\\chat.conf");
             ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(potentialFile).build();
@@ -105,11 +110,9 @@ public class DTPunishment {
         } catch (ObjectMappingException | IOException e) {
             e.printStackTrace();
         }
-
-        config.init();
-
+    	
     }
-
+    
     @Listener
     public void onServerInit(GameInitializationEvent event) {
         getLogger().info("Registering listeners and commands...");
@@ -209,7 +212,20 @@ public class DTPunishment {
                 .build();
 
         Sponge.getCommandManager().register(this, addWord, "addword");
+       
+        CommandSpec reloadConfig = CommandSpec.builder()
+                .permission("dtpunishment.admin.reload")
+                .description(Text.of("Reload configuration from disk"))
+                .executor(new CommandReloadConfig(this))
+                .build();
 
+        CommandSpec adminCmd = CommandSpec.builder()
+                .permission("dtpunishment.admin")
+                .description(Text.of("Admin commands for DTPunishment"))
+                .child(reloadConfig, "reload")
+                .build();       
+       
+        Sponge.getCommandManager().register(this, adminCmd, "dtp", "dtpunish");
     }
 
 
