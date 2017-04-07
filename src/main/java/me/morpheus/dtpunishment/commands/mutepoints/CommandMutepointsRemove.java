@@ -7,6 +7,7 @@ import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -18,47 +19,49 @@ import java.util.UUID;
 
 public class CommandMutepointsRemove implements CommandExecutor {
 
-    private final DTPunishment main;
+	private final DTPunishment main;
 
-    public CommandMutepointsRemove(DTPunishment main){
-        this.main = main;
-    }
+	public CommandMutepointsRemove(DTPunishment main){
+		this.main = main;
+	}
 
 
-    @Override
-    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Optional<User> user = Util.getUser(args.<String>getOne("player").get());
-        if (!user.isPresent()) {
-            src.sendMessage(Util.getWatermark().append(Text.of(args.<String>getOne("player").get() + " never joined your server ")).build());
-            return CommandResult.empty();
-        }
+	@Override
+	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+		Optional<User> user = Util.getUser(args.<String>getOne("player").get());
+		if (!user.isPresent()) {
+			src.sendMessage(Util.getWatermark().append(Text.of(args.<String>getOne("player").get() + " never joined your server ")).build());
+			return CommandResult.empty();
+		}
 
-        UUID uuid = user.get().getUniqueId();
-        String name = user.get().getName();
-        int actual = main.getDatastore().getMutepoints(uuid);
-        int amount = args.<Integer>getOne("amount").get();
+		UUID uuid = user.get().getUniqueId();
+		String name = user.get().getName();
+		int actual = main.getDatastore().getMutepoints(uuid);
+		int amount = args.<Integer>getOne("amount").get();
 
-        if (actual - amount < 0) amount = actual;
-        int total = actual - amount;
+		if (actual - amount < 0) amount = actual;
+		int total = actual - amount;
 
-        main.getDatastore().removeMutepoints(uuid, amount);
-        main.getDatastore().finish();
+		main.getDatastore().removeMutepoints(uuid, amount);
+		main.getDatastore().finish();
 
-        if (user.get().isOnline()) {
-            user.get().getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.AQUA, amount + " mutepoints have been removed; you now have " + total)).build());
-        }
+		if (user.get().isOnline()) {
+			user.get().getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.AQUA, amount + " mutepoints have been removed; you now have " + total)).build());
+		}
 
-        src.sendMessage(Util.getWatermark().append(Text.of(TextColors.AQUA, "You have removed " + amount + " mutepoints from " + name + "; they now have " + total)).build());
-        for (Player p : Sponge.getServer().getOnlinePlayers()) {
-            if (p.hasPermission("dtpunishment.staff.notify")) {
-                Text message = Util.getWatermark().append(
-                        Text.builder(src.getName() + " has removed " + amount + " mutepoint(s) from "
-                                + name +  "; they now have " + total).color(TextColors.AQUA).build()).build();
-                p.sendMessage(message);
-            }
-        }
+		Text adminMessage = Util.getWatermark().append(
+				Text.of(TextColors.AQUA, String.format("%s has removed %d mutepoint(s) from %s; they now have %d", src.getName(), amount, name, total))).build();
 
-        return CommandResult.success();
+		if(src instanceof ConsoleSource)
+			src.sendMessage(adminMessage);
+		
+		for (Player p : Sponge.getServer().getOnlinePlayers()) {
+			if (p.hasPermission("dtpunishment.staff.notify") || src == p.getPlayer().get()) {
+				p.sendMessage(adminMessage);
+			}
+		}
 
-    }
+		return CommandResult.success();
+
+	}
 }

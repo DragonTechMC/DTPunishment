@@ -7,6 +7,7 @@ import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -48,13 +49,15 @@ public class CommandBanpointsRemove implements CommandExecutor {
             user.get().getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.AQUA, amount + " banpoints have been removed; you now have " + total)).build());
         }
 
-        src.sendMessage(Util.getWatermark().append(Text.of(TextColors.AQUA, "You have removed " + amount + " banpoints from " + name + "; they now have " + total)).build());
+    	Text adminMessage = Util.getWatermark().append(
+				Text.of(TextColors.AQUA, String.format("%s has removed %d banpoint(s) from %s; they now have %d", src.getName(), amount, name, total))).build();
+
+    	if(src instanceof ConsoleSource)
+    		src.sendMessage(adminMessage);
+    	
         for (Player p : Sponge.getServer().getOnlinePlayers()) {
-            if (p.hasPermission("dtpunishment.staff.notify")) {
-                Text message = Util.getWatermark().append(
-                        Text.builder(src.getName() + " has removed " + amount + " banpoint(s) from "
-                                + name +  "; they now have " + total).color(TextColors.AQUA).build()).build();
-                p.sendMessage(message);
+            if (p.hasPermission("dtpunishment.staff.notify") || p.getPlayer().get() == src) {
+                p.sendMessage(adminMessage);
             }
         }
 

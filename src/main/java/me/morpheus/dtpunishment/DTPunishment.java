@@ -227,10 +227,4 @@ public class DTPunishment {
        
         Sponge.getCommandManager().register(this, adminCmd, "dtp", "dtpunish");
     }
-
-
-
-
-
-
 }

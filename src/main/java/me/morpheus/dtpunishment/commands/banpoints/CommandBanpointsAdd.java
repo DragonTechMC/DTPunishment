@@ -8,6 +8,7 @@ import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -25,7 +26,6 @@ public class CommandBanpointsAdd implements CommandExecutor {
         this.main = main;
     }
 
-
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         Optional<User> user = Util.getUser(args.<String>getOne("player").get());
@@ -38,7 +38,6 @@ public class CommandBanpointsAdd implements CommandExecutor {
         String name = user.get().getName();
         int amount = args.<Integer>getOne("amount").get();
 
-
         main.getDatastore().addBanpoints(uuid, amount);
 
         int post = main.getDatastore().getBanpoints(uuid);
@@ -47,14 +46,15 @@ public class CommandBanpointsAdd implements CommandExecutor {
             user.get().getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, amount + " banpoints have been added; you now have " + post)).build());
         }
 
-        src.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, "You have added " + amount + " banpoints to " + name + "; they now have " + post)).build());
+    	Text adminMessage = Util.getWatermark().append(
+				Text.of(TextColors.RED, String.format("%s has added %d banpoint(s) to %s; they now have %d", src.getName(), amount, name, post))).build();
 
+    	if(src instanceof ConsoleSource)
+    		src.sendMessage(adminMessage);
+    	
         for (Player p : Sponge.getServer().getOnlinePlayers()) {
-            if (p.hasPermission("dtpunishment.staff.notify")) {
-                Text message = Util.getWatermark().append(
-                        Text.builder(src.getName() + " has added " + amount + " banpoint(s) to "
-                                + name +  "; they now have " + post).color(TextColors.RED).build()).build();
-                p.sendMessage(message);
+            if (p.hasPermission("dtpunishment.staff.notify") || p.getPlayer().get() == src) {
+                p.sendMessage(adminMessage);
             }
         }
 
