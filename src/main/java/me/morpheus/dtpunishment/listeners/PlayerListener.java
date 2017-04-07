@@ -4,6 +4,8 @@ package me.morpheus.dtpunishment.listeners;
 import me.morpheus.dtpunishment.ChatWatcher;
 import me.morpheus.dtpunishment.DTPunishment;
 import me.morpheus.dtpunishment.penalty.MutepointsPunishment;
+import me.morpheus.dtpunishment.utils.Util;
+
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -84,16 +86,16 @@ public class PlayerListener {
                 int points = main.getChatConfig().banned.mutepoints;
                 main.getDatastore().addMutepoints(uuid, points);
 
-                player.sendMessage(Text.of(TextColors.RED, "You said a banned word; " +
+                player.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, "You said a banned word; " +
                         points + " mutepoint(s) have been added automatically, you now have " +
                         main.getDatastore().getMutepoints(uuid) +
-                        ". If you believe this is an error, contact a staff member."));
+                        ". If you believe this is an error, contact a staff member.")).build());
 
                 for (Player p : Sponge.getServer().getOnlinePlayers()) {
                     if (p.hasPermission("dtpunishment.staff.notify")) {
-                        p.sendMessage(Text.of(TextColors.RED, player.getName() + " said a banned word; " +
+                        p.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, player.getName() + " said a banned word; " +
                                 points + " mutepoint(s) have been added automatically, they now have " +
-                                main.getDatastore().getMutepoints(uuid)));
+                                main.getDatastore().getMutepoints(uuid))).build());
                     }
                 }
 
@@ -106,15 +108,15 @@ public class PlayerListener {
 
                 main.getDatastore().addMutepoints(uuid, points);
 
-                player.sendMessage(Text.of(TextColors.RED, "You have exceeded the max percentage of caps allowed; " +
+                player.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, "You have exceeded the max percentage of caps allowed; " +
                         points + " mutepoint(s) have been added automatically, you now have " +
                         main.getDatastore().getMutepoints(uuid) +
-                        ". If you believe this is an error, contact a staff member."));
+                        ". If you believe this is an error, contact a staff member.")).build());
                 for (Player p : Sponge.getServer().getOnlinePlayers()) {
                     if (p.hasPermission("dtpunishment.staff.notify")) {
-                        p.sendMessage(Text.of(TextColors.RED, player.getName() + " has exceeded the max percentage of caps allowed;  " +
+                        p.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, player.getName() + " has exceeded the max percentage of caps allowed;  " +
                                 points + " mutepoint(s) have been added automatically, they now have " +
-                                main.getDatastore().getMutepoints(uuid)));
+                                main.getDatastore().getMutepoints(uuid))).build());
                     }
                 }
                 event.setMessageCancelled(true);

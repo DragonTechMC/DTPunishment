@@ -28,28 +28,28 @@ public class CommandPlayerInfo implements CommandExecutor {
         if (player.isPresent()) {
             Optional<User> user = Util.getUser(player.get());
             if (!user.isPresent()) {
-                src.sendMessage(Text.of(player.get() + " never joined your server "));
+                src.sendMessage(Util.getWatermark().append(Text.of(player.get() + " never joined your server ")).build());
                 return CommandResult.empty();
             }
 
             UUID uuid = user.get().getUniqueId();
 
-            src.sendMessage(Text.of("Player : " + user.get().getName()));
-            src.sendMessage(Text.of("Mute : " + main.getDatastore().getMutepoints(uuid)));
-            src.sendMessage(Text.of("Ban : " + main.getDatastore().getBanpoints(uuid)));
+            src.sendMessage(Util.getWatermark().append(Text.of("Player : " + user.get().getName())).build());
+            src.sendMessage(Util.getWatermark().append(Text.of("Mute : " + main.getDatastore().getMutepoints(uuid))).build());
+            src.sendMessage(Util.getWatermark().append(Text.of("Ban : " + main.getDatastore().getBanpoints(uuid))).build());
 
         } else {
 
             if (!(src instanceof Player)) {
-                src.sendMessage(Text.of("You need to be a player to execute this"));
+                src.sendMessage(Util.getWatermark().append(Text.of("You need to be a player to execute this")).build());
                 return CommandResult.empty();
             }
 
             UUID uuid = ((Player) src).getUniqueId();
 
-            src.sendMessage(Text.of("Player : " + src.getName()));
-            src.sendMessage(Text.of("Mute : " + main.getDatastore().getMutepoints(uuid)));
-            src.sendMessage(Text.of("Ban : " + main.getDatastore().getBanpoints(uuid)));
+            src.sendMessage(Util.getWatermark().append(Text.of("Player : " + src.getName())).build());
+            src.sendMessage(Util.getWatermark().append(Text.of("Mute : " + main.getDatastore().getMutepoints(uuid))).build());
+            src.sendMessage(Util.getWatermark().append(Text.of("Ban : " + main.getDatastore().getBanpoints(uuid))).build());
 
         }
 

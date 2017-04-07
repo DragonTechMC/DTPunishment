@@ -30,7 +30,7 @@ public class CommandBanpointsAdd implements CommandExecutor {
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         Optional<User> user = Util.getUser(args.<String>getOne("player").get());
         if (!user.isPresent()) {
-            src.sendMessage(Text.of(args.<String>getOne("player").get() + " never joined your server "));
+            src.sendMessage(Util.getWatermark().append(Text.of(args.<String>getOne("player").get() + " never joined your server ")).build());
             return CommandResult.empty();
         }
 
@@ -44,14 +44,14 @@ public class CommandBanpointsAdd implements CommandExecutor {
         int post = main.getDatastore().getBanpoints(uuid);
 
         if (user.get().isOnline()) {
-            user.get().getPlayer().get().sendMessage(Text.of(TextColors.RED, amount + " banpoints have been added; you now have " + post));
+            user.get().getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, amount + " banpoints have been added; you now have " + post)).build());
         }
 
-        src.sendMessage(Text.of(TextColors.RED, "You have added " + amount + " banpoints to " + name + "; they now have " + post));
+        src.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, "You have added " + amount + " banpoints to " + name + "; they now have " + post)).build());
 
         for (Player p : Sponge.getServer().getOnlinePlayers()) {
             if (p.hasPermission("dtpunishment.staff.notify")) {
-                Text message = Text.builder("[DTP] ").color(TextColors.GOLD).append(
+                Text message = Util.getWatermark().append(
                         Text.builder(src.getName() + " has added " + amount + " banpoint(s) to "
                                 + name +  "; they now have " + post).color(TextColors.RED).build()).build();
                 p.sendMessage(message);

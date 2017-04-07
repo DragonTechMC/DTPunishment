@@ -1,6 +1,8 @@
 package me.morpheus.dtpunishment.penalty;
 
 import me.morpheus.dtpunishment.DTPunishment;
+import me.morpheus.dtpunishment.utils.Util;
+
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
@@ -43,7 +45,7 @@ public class MutepointsPunishment {
             Player p = Sponge.getServer().getPlayer(uuid).get();
 
             for (Player pl : Sponge.getServer().getOnlinePlayers()) {
-                Text message = Text.builder("[DTP] ").color(TextColors.GOLD).append(
+                Text message = Util.getWatermark().append(
                         Text.builder(p.getName() + " has been muted for " + minutes + " minutes for exceeding "
                                 + rounded + " mutepoint(s)").color(TextColors.RED).build()).build();
                 pl.sendMessage(message);

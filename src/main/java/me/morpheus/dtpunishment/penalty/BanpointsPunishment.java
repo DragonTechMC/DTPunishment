@@ -43,13 +43,13 @@ public class BanpointsPunishment {
 
         Ban ban = Ban.builder().type(BanTypes.PROFILE).profile(user.getProfile())
                 .expirationDate(expiration)
-                .reason(Text.of(TextColors.AQUA, TextStyles.BOLD, "You have been banned for " + days + " days " +
-                        "because you reached " + rounded + " points. "))
+                .reason(Util.getWatermark().append(Text.of(TextColors.AQUA, TextStyles.BOLD, "You have been banned for " + days + " days " +
+                        "because you reached " + rounded + " points. ")).build())
                 .build();
         service.addBan(ban);
 
         for (Player pl : Sponge.getServer().getOnlinePlayers()) {
-            Text message = Text.builder("[DTP] ").color(TextColors.GOLD).append(
+            Text message = Util.getWatermark().append(
                     Text.builder(user.getName() + " has been banned for " + days + " days for exceeding "
                             + rounded + " banpoint(s)").color(TextColors.RED).build()).build();
             pl.sendMessage(message);
@@ -58,8 +58,8 @@ public class BanpointsPunishment {
         main.getDatastore().removeBanpoints(uuid, rounded);
 
         if(user.isOnline()) {
-            user.getPlayer().get().kick(Text.of(TextColors.AQUA, TextStyles.BOLD,
-                    "You have been banned for " + days + " days " + "because you reached " + rounded + " points. "));
+            user.getPlayer().get().kick(Util.getWatermark().append(Text.of(TextColors.AQUA, TextStyles.BOLD,
+                    "You have been banned for " + days + " days " + "because you reached " + rounded + " points. ")).build());
         }
 
 

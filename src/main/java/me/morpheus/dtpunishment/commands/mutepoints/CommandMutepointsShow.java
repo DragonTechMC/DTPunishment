@@ -28,13 +28,13 @@ public class CommandMutepointsShow implements CommandExecutor {
 
         Optional<User> user = Util.getUser(args.<String>getOne("player").get());
         if (!user.isPresent()) {
-            src.sendMessage(Text.of(args.<String>getOne("player").get() + " never joined your server "));
+            src.sendMessage(Util.getWatermark().append(Text.of(args.<String>getOne("player").get() + " never joined your server ")).build());
             return CommandResult.empty();
         }
 
         UUID uuid = user.get().getUniqueId();
 
-        src.sendMessage(Text.of(user.get().getName() + " has " + main.getDatastore().getMutepoints(uuid) + " mutepoints"));
+        src.sendMessage(Util.getWatermark().append(Text.of(user.get().getName() + " has " + main.getDatastore().getMutepoints(uuid) + " mutepoints")).build());
         main.getDatastore().finish();
 
         return CommandResult.success();
