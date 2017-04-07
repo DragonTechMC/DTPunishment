@@ -8,6 +8,7 @@ import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -41,26 +42,27 @@ public class CommandMutepointsAdd implements CommandExecutor {
 
         main.getDatastore().addMutepoints(uuid, amount);
 
-        int post = main.getDatastore().getMutepoints(uuid);
+        int total = main.getDatastore().getMutepoints(uuid);
 
         if (user.get().isOnline()) {
-            user.get().getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, amount + " mutepoints have been added; you now have " + post)).build());
+            user.get().getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, amount + " mutepoints have been added; you now have " + total)).build());
         }
 
-        src.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, "You have added " + amount + " mutepoints to " + name + "; they now have " + post)).build());
+    	Text adminMessage = Util.getWatermark().append(
+				Text.of(TextColors.RED, String.format("%s has added %d mutepoint(s) to %s; they now have %d", src.getName(), amount, name, total))).build();
 
+    	if(src instanceof ConsoleSource)
+    		src.sendMessage(adminMessage);
+    	
         for (Player p : Sponge.getServer().getOnlinePlayers()) {
-            if (p.hasPermission("dtpunishment.staff.notify")) {
-                Text message = Util.getWatermark().append(
-                        Text.builder(src.getName() + " has added " + amount + " mutepoint(s) to "
-                                + name +  "; they now have " + post).color(TextColors.RED).build()).build();
-                p.sendMessage(message);
+            if (p.hasPermission("dtpunishment.staff.notify") || p.getPlayer().get() == src) {
+                p.sendMessage(adminMessage);
             }
         }
 
         MutepointsPunishment mutepunish = new MutepointsPunishment(main);
 
-        mutepunish.check(uuid, post);
+        mutepunish.check(uuid, total);
 
         main.getDatastore().finish();
 
