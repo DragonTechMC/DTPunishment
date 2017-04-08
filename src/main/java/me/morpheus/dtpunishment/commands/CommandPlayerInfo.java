@@ -1,6 +1,6 @@
 package me.morpheus.dtpunishment.commands;
 
-import me.morpheus.dtpunishment.DTPunishment;
+import me.morpheus.dtpunishment.data.DataStore;
 import me.morpheus.dtpunishment.utils.Util;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -11,17 +11,16 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
 
+import com.google.inject.Inject;
+
 import java.util.Optional;
 import java.util.UUID;
 
 public class CommandPlayerInfo implements CommandExecutor {
 
-    private final DTPunishment main;
-
-    public CommandPlayerInfo(DTPunishment main){
-        this.main = main;
-    }
-
+	@Inject 
+	private DataStore dataStore;
+	
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         Optional<User> player = args.getOne("player");
@@ -30,8 +29,8 @@ public class CommandPlayerInfo implements CommandExecutor {
             UUID uuid = user.getUniqueId();
 
             src.sendMessage(Util.getWatermark().append(Text.of("Player : " + user.getName())).build());
-            src.sendMessage(Util.getWatermark().append(Text.of("Mute : " + main.getDatastore().getMutepoints(uuid))).build());
-            src.sendMessage(Util.getWatermark().append(Text.of("Ban : " + main.getDatastore().getBanpoints(uuid))).build());
+            src.sendMessage(Util.getWatermark().append(Text.of("Mute : " + dataStore.getMutepoints(uuid))).build());
+            src.sendMessage(Util.getWatermark().append(Text.of("Ban : " + dataStore.getBanpoints(uuid))).build());
 
         } else {
 
@@ -43,12 +42,12 @@ public class CommandPlayerInfo implements CommandExecutor {
             UUID uuid = ((Player) src).getUniqueId();
 
             src.sendMessage(Util.getWatermark().append(Text.of("Player : " + src.getName())).build());
-            src.sendMessage(Util.getWatermark().append(Text.of("Mute : " + main.getDatastore().getMutepoints(uuid))).build());
-            src.sendMessage(Util.getWatermark().append(Text.of("Ban : " + main.getDatastore().getBanpoints(uuid))).build());
+            src.sendMessage(Util.getWatermark().append(Text.of("Mute : " + dataStore.getMutepoints(uuid))).build());
+            src.sendMessage(Util.getWatermark().append(Text.of("Ban : " + dataStore.getBanpoints(uuid))).build());
 
         }
 
-        main.getDatastore().finish();
+        dataStore.finish();
         return CommandResult.success();
     }
 }

@@ -1,6 +1,5 @@
 package me.morpheus.dtpunishment.data;
 
-import me.morpheus.dtpunishment.DTPunishment;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -9,20 +8,26 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public class FileDataStore extends DataStore {
+import org.slf4j.Logger;
+import org.spongepowered.api.config.ConfigDir;
 
-    private final DTPunishment main;
+import com.google.inject.Inject;
 
-    public FileDataStore(DTPunishment main) {
-        this.main = main;
-    }
+public class FileDataStore implements DataStore {
 
+	@Inject
+	private Logger logger;
+	
+	@Inject
+	@ConfigDir(sharedRoot = false)
+	private Path configDir;
+	
     private ConfigurationLoader<CommentedConfigurationNode> loader;
+
     private ConfigurationNode node;
 
     private void save() {
@@ -34,7 +39,7 @@ public class FileDataStore extends DataStore {
     }
 
     private void initPlayerConfig(UUID player) {
-        Path playerData = Paths.get(main.getConfigPath() + "/data/" + player + ".conf");
+        Path playerData = configDir.resolve(String.format("data/%s.conf", player));
         loader = HoconConfigurationLoader.builder().setPath(playerData).build();
         try {
             node = loader.load();
@@ -45,9 +50,9 @@ public class FileDataStore extends DataStore {
 
     @Override
     public void init() {
-        Path dataFolder = Paths.get(main.getConfigPath() + "/data");
+        Path dataFolder = configDir.resolve("data");
         if (Files.exists(dataFolder)) {
-            main.getLogger().info("Data folder found");
+            logger.info("Data folder found");
         } else {
             try {
                 Files.createDirectories(dataFolder);
@@ -151,12 +156,14 @@ public class FileDataStore extends DataStore {
 
     @Override
     public void createUser(UUID player) {
-        Path playerData = Paths.get(main.getConfigPath() + "/data/" + player + ".conf");
+        Path playerData = configDir.resolve(String.format("data/%s.conf", player));
+
         try {
             Files.createFile(playerData);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
         initPlayerConfig(player);
         node.getNode("points", "bUpdatedAt").setValue(String.valueOf(LocalDate.now()));
         node.getNode("points", "banpoints").setValue(0);
@@ -168,9 +175,12 @@ public class FileDataStore extends DataStore {
 
     @Override
     public boolean userExists(UUID player) {
-        Path playerData = Paths.get(main.getConfigPath() + "/data/" + player + ".conf");
+        Path playerData = configDir.resolve(String.format("data/%s.conf", player));
         return Files.exists(playerData);
     }
 
-
+	@Override
+	public void finish() {
+		
+	}
 }

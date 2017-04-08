@@ -4,40 +4,37 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public abstract class DataStore {
+public interface DataStore {
 
-    public abstract void init();
+    public void init();
 
-    public abstract int getBanpoints(UUID player);
+    public int getBanpoints(UUID player);
 
-    public abstract LocalDate getBanpointsUpdatedAt(UUID player);
+    public LocalDate getBanpointsUpdatedAt(UUID player);
 
-    public abstract int getMutepoints(UUID player);
+    public int getMutepoints(UUID player);
 
-    public abstract LocalDate getMutepointsUpdatedAt(UUID player);
+    public LocalDate getMutepointsUpdatedAt(UUID player);
 
-    public abstract boolean isMuted(UUID player);
+    public boolean isMuted(UUID player);
 
-    public abstract Instant getExpiration(UUID player);
+    public Instant getExpiration(UUID player);
 
-    public abstract void addBanpoints(UUID player, int amount);
+    public void addBanpoints(UUID player, int amount);
 
-    public abstract void removeBanpoints(UUID player, int amount);
+    public void removeBanpoints(UUID player, int amount);
 
-    public abstract void addMutepoints(UUID player, int amount);
+    public void addMutepoints(UUID player, int amount);
 
-    public abstract void removeMutepoints(UUID player, int amount);
+    public void removeMutepoints(UUID player, int amount);
 
-    public abstract void mute(UUID player, Instant expiration);
+    public void mute(UUID player, Instant expiration);
 
-    public abstract void unmute(UUID player);
+    public void unmute(UUID player);
 
-    public abstract void createUser(UUID player);
+    public void createUser(UUID player);
 
-    public abstract boolean userExists(UUID player);
+    public boolean userExists(UUID player);
 
-    public void finish() {
-
-    }
-
+    public void finish();
 }

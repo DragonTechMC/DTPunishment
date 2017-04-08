@@ -16,12 +16,6 @@ public class Util {
         return userStorage.get().get(uuid);
     }
 
-    @Deprecated
-    public static Optional<User> getUser(String player) {
-        Optional<UserStorageService> userStorage = Sponge.getServiceManager().provide(UserStorageService.class);
-        return userStorage.get().get(player);
-    }
-
     public static Text.Builder getWatermark() {
     	return Text.builder("[DTP] ").color(TextColors.GOLD);
     }

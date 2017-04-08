@@ -1,8 +1,11 @@
 package me.morpheus.dtpunishment.data;
 
-import me.morpheus.dtpunishment.DTPunishment;
+import me.morpheus.dtpunishment.configuration.MainConfig;
+
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.sql.SqlService;
+
+import com.google.inject.Inject;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -13,14 +16,11 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-public class DatabaseDataStore extends DataStore {
+public class MySqlDataStore implements DataStore {
 
-    private final DTPunishment main;
-
-    public DatabaseDataStore(DTPunishment main){
-        this.main = main;
-    }
-
+	@Inject
+	private MainConfig mainConfig;
+	
     private SqlService sql;
 
     private DataSource getDataSource(String jdbcUrl) throws SQLException {
@@ -29,11 +29,11 @@ public class DatabaseDataStore extends DataStore {
     }
 
     private String getJdbcUrl() {
-        String name = main.getConfig().database.name;
-        String host = main.getConfig().database.host;
-        int port = main.getConfig().database.port;
-        String user = main.getConfig().database.username;
-        String pass = main.getConfig().database.password;
+        String name = mainConfig.database.name;
+        String host = mainConfig.database.host;
+        int port = mainConfig.database.port;
+        String user = mainConfig.database.username;
+        String pass = mainConfig.database.password;
 
         return "jdbc:mysql://"+user+":"+pass+"@"+host+":"+port+"/"+name;
     }

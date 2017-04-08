@@ -2,6 +2,10 @@ package me.morpheus.dtpunishment;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.inject.Inject;
+
+import me.morpheus.dtpunishment.configuration.ChatConfig;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,18 +16,15 @@ import java.util.UUID;
 
 public class ChatWatcher {
 
-    private final DTPunishment main;
-
-    public ChatWatcher (DTPunishment main) {
-        this.main = main;
-    }
-
+	@Inject 
+	private ChatConfig chatConfig;
+	
     private static Map<UUID, List<String>> map = new HashMap<>();
     private static Instant previous;
 
     public boolean containBannedWords(String message){
 
-        List<String> list = main.getChatConfig().banned.words;
+        List<String> list = chatConfig.banned.words;
 
         for (String s : list) {
             if (message.replaceAll("(?ix)[\\W]", "").contains(s)) return true;
@@ -33,10 +34,8 @@ public class ChatWatcher {
 
     public boolean containUppercase(String message) {
 
-        int minimum = main.getChatConfig().caps.minimum_length;
-        int percentage = main.getChatConfig().caps.percentage;
-
-        if (message.replaceAll("[\\W]", "").length() <= minimum) return false;
+        if (message.replaceAll("[\\W]", "").length() <= chatConfig.caps.minimum_length) 
+        	return false;
 
         String[] words = message.split("\\s+");
         int upper = 0;
@@ -54,7 +53,7 @@ public class ChatWatcher {
             }
 
         }
-        int max = (percentage * total) / 100;
+        int max = (chatConfig.caps.percentage * total) / 100;
         return upper > max;
 
     }
@@ -64,9 +63,7 @@ public class ChatWatcher {
         Instant now = Instant.now();
         message = StringUtils.lowerCase(message);
 
-        int seconds = main.getChatConfig().spam.seconds;
-
-        if (previous == null || now.isAfter(previous.plusSeconds(seconds))) map.clear();
+        if (previous == null || now.isAfter(previous.plusSeconds(chatConfig.spam.seconds))) map.clear();
 
         previous = now;
 
@@ -81,9 +78,7 @@ public class ChatWatcher {
 
         int count = Collections.frequency(map.get(author), message);
 
-        int max = main.getChatConfig().spam.max_messages + 1;
-
-        return count >= max;
+        return count > chatConfig.spam.max_messages;
     }
 
 

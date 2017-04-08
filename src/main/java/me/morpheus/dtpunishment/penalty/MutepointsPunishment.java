@@ -1,59 +1,76 @@
 package me.morpheus.dtpunishment.penalty;
 
-import me.morpheus.dtpunishment.DTPunishment;
+import me.morpheus.dtpunishment.configuration.MainConfig;
+import me.morpheus.dtpunishment.data.DataStore;
 import me.morpheus.dtpunishment.utils.Util;
 
+import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
+@Singleton
 public class MutepointsPunishment {
 
-    private final DTPunishment main;
+	@Inject 
+	private MainConfig mainConfig;
 
-    public MutepointsPunishment(DTPunishment main) {
-        this.main = main;
-    }
+	@Inject
+	private DataStore dataStore;
 
-    public void check(UUID uuid, int amount) {
+	@Inject
+	private BanpointsPunishment banPunish;
 
-        if (amount < 5) return;
+	@Inject
+	private Logger logger;
 
-        int rounded = (amount < 10) ? 5 : amount/10 * 10;
+	public void check(UUID uuid, int amount) {
 
-        String punishment = main.getConfig().punishment.mutepoints.get(rounded + " mutepoints");
+		if (amount < 5) return;
 
-        if (punishment.substring(0, 1).equalsIgnoreCase("+")) {
-            int bp = Integer.parseInt(punishment.substring(1, punishment.length() - 2));
+		int rounded = (amount < 10) ? 5 : amount/10 * 10;
 
-            main.getDatastore().addBanpoints(uuid, bp);
+		String punishment = mainConfig.punishment.mutepoints.get(rounded + " mutepoints");
 
-            BanpointsPunishment banpunish = new BanpointsPunishment(main);
-            banpunish.check(uuid, bp);
-        } else {
-            int minutes = Integer.parseInt(punishment.substring(0, punishment.length() - 1));
-            Instant expiration = Instant.now().plus(Duration.ofMinutes(minutes));
+		if(punishment == null) {
+			logger.info(String.format("Could not find punishment for %d mutepoints", rounded));
+			return;
+		}
 
-            main.getDatastore().mute(uuid, expiration);
-            main.getDatastore().removeMutepoints(uuid, rounded);
+		if (punishment.substring(0, 1).equalsIgnoreCase("+")) {
+			int bp = Integer.parseInt(punishment.substring(1, punishment.length() - 2));
 
-            Player p = Sponge.getServer().getPlayer(uuid).get();
+			dataStore.addBanpoints(uuid, bp);
+			banPunish.check(uuid, bp);
+		} else {
+			int minutes = Integer.parseInt(punishment.substring(0, punishment.length() - 1));
+			Instant expiration = Instant.now().plus(Duration.ofMinutes(minutes));
 
-            for (Player pl : Sponge.getServer().getOnlinePlayers()) {
-                Text message = Util.getWatermark().append(
-                        Text.builder(p.getName() + " has been muted for " + minutes + " minutes for exceeding "
-                                + rounded + " mutepoint(s)").color(TextColors.RED).build()).build();
-                pl.sendMessage(message);
-            }
+			dataStore.mute(uuid, expiration);
 
-        }
+			Optional<User> userOpt = Util.getUser(uuid);
 
-    }
+			if(userOpt.isPresent()) {
+				for (Player pl : Sponge.getServer().getOnlinePlayers()) {
+					Text message = Util.getWatermark().append(
+							Text.builder(userOpt.get().getName() + " has been muted for " + minutes + " minutes for exceeding "
+									+ rounded + " mutepoint(s)").color(TextColors.RED).build()).build();
+					pl.sendMessage(message);
+				}
+			}
+		}
+
+	}
 
 
 }

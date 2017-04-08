@@ -1,6 +1,6 @@
 package me.morpheus.dtpunishment.commands.banpoints;
 
-import me.morpheus.dtpunishment.DTPunishment;
+import me.morpheus.dtpunishment.data.DataStore;
 import me.morpheus.dtpunishment.penalty.BanpointsPunishment;
 import me.morpheus.dtpunishment.utils.Util;
 import org.spongepowered.api.Sponge;
@@ -15,17 +15,18 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.Optional;
+import com.google.inject.Inject;
+
 import java.util.UUID;
 
 public class CommandBanpointsAdd implements CommandExecutor {
 
-    private final DTPunishment main;
-
-    public CommandBanpointsAdd(DTPunishment main){
-        this.main = main;
-    }
-
+	@Inject
+	private DataStore dataStore;
+	
+	@Inject
+	private BanpointsPunishment banPunish;
+	
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         User user = args.<User>getOne("player").get();
@@ -33,9 +34,9 @@ public class CommandBanpointsAdd implements CommandExecutor {
         String name = user.getName();
         int amount = args.<Integer>getOne("amount").get();
 
-        main.getDatastore().addBanpoints(uuid, amount);
+        dataStore.addBanpoints(uuid, amount);
 
-        int post = main.getDatastore().getBanpoints(uuid);
+        int post = dataStore.getBanpoints(uuid);
 
         if (user.isOnline()) {
             user.getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, amount + " banpoints have been added; you now have " + post)).build());
@@ -53,10 +54,9 @@ public class CommandBanpointsAdd implements CommandExecutor {
             }
         }
 
-        BanpointsPunishment banpunish = new BanpointsPunishment(main);
-        banpunish.check(uuid, post);
+        banPunish.check(uuid, post);
 
-        main.getDatastore().finish();
+        dataStore.finish();
 
         return CommandResult.success();
     }
