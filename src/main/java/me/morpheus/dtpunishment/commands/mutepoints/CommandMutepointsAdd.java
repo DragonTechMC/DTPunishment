@@ -29,23 +29,17 @@ public class CommandMutepointsAdd implements CommandExecutor {
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Optional<User> user = Util.getUser(args.<String>getOne("player").get());
-        if (!user.isPresent()) {
-            src.sendMessage(Util.getWatermark().append(Text.of(args.<String>getOne("player").get() + " never joined your server ")).build());
-            return CommandResult.empty();
-        }
-
-        UUID uuid = user.get().getUniqueId();
-        String name = user.get().getName();
+        User user = args.<User>getOne("player").get();
+        UUID uuid = user.getUniqueId();
+        String name = user.getName();
         int amount = args.<Integer>getOne("amount").get();
-
 
         main.getDatastore().addMutepoints(uuid, amount);
 
         int total = main.getDatastore().getMutepoints(uuid);
 
-        if (user.get().isOnline()) {
-            user.get().getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, amount + " mutepoints have been added; you now have " + total)).build());
+        if (user.isOnline()) {
+            user.getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, amount + " mutepoints have been added; you now have " + total)).build());
         }
 
     	Text adminMessage = Util.getWatermark().append(

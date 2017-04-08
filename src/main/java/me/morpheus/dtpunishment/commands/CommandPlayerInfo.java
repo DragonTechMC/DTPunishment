@@ -24,17 +24,12 @@ public class CommandPlayerInfo implements CommandExecutor {
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Optional<String> player = args.getOne("player");
+        Optional<User> player = args.getOne("player");
         if (player.isPresent()) {
-            Optional<User> user = Util.getUser(player.get());
-            if (!user.isPresent()) {
-                src.sendMessage(Util.getWatermark().append(Text.of(player.get() + " never joined your server ")).build());
-                return CommandResult.empty();
-            }
+            User user = player.get();
+            UUID uuid = user.getUniqueId();
 
-            UUID uuid = user.get().getUniqueId();
-
-            src.sendMessage(Util.getWatermark().append(Text.of("Player : " + user.get().getName())).build());
+            src.sendMessage(Util.getWatermark().append(Text.of("Player : " + user.getName())).build());
             src.sendMessage(Util.getWatermark().append(Text.of("Mute : " + main.getDatastore().getMutepoints(uuid))).build());
             src.sendMessage(Util.getWatermark().append(Text.of("Ban : " + main.getDatastore().getBanpoints(uuid))).build());
 
