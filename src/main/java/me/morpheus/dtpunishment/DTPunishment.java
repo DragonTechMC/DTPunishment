@@ -1,6 +1,18 @@
 package me.morpheus.dtpunishment;
 
+import org.slf4j.Logger;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.text.Text;
+
 import com.google.inject.Inject;
+import com.google.inject.Injector;
+
 import me.morpheus.dtpunishment.commands.CommandPlayerInfo;
 import me.morpheus.dtpunishment.commands.CommandReloadConfig;
 import me.morpheus.dtpunishment.commands.CommandWordAdd;
@@ -10,221 +22,128 @@ import me.morpheus.dtpunishment.commands.banpoints.CommandBanpointsShow;
 import me.morpheus.dtpunishment.commands.mutepoints.CommandMutepointsAdd;
 import me.morpheus.dtpunishment.commands.mutepoints.CommandMutepointsRemove;
 import me.morpheus.dtpunishment.commands.mutepoints.CommandMutepointsShow;
-import me.morpheus.dtpunishment.configuration.ChatConfig;
+import me.morpheus.dtpunishment.commands.mutepoints.CommandUnmute;
 import me.morpheus.dtpunishment.configuration.ConfigurationManager;
-import me.morpheus.dtpunishment.configuration.DTPunishmentConfig;
-import me.morpheus.dtpunishment.data.DataStore;
-import me.morpheus.dtpunishment.data.DatabaseDataStore;
-import me.morpheus.dtpunishment.data.FileDataStore;
+import me.morpheus.dtpunishment.configuration.MainConfig;
 import me.morpheus.dtpunishment.listeners.PlayerListener;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import org.slf4j.Logger;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.args.GenericArguments;
-import org.spongepowered.api.command.spec.CommandSpec;
-import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.config.DefaultConfig;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.text.Text;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-@Plugin(
-        id = "dtpunishment",
-        name = "DTPunishment"
-)
+@Plugin(id = "dtpunishment", name = "DTPunishment")
 public class DTPunishment {
 
     @Inject
     private Logger logger;
 
     @Inject
-    @DefaultConfig(sharedRoot = false)
-    private Path defaultConfig;
+    private ConfigurationManager configurationManager;
 
     @Inject
-    @DefaultConfig(sharedRoot = false)
-    private ConfigurationLoader<CommentedConfigurationNode> defaultConfigLoader;
+    private Injector injector;
+
+    private Injector childInjector;
 
     @Inject
-    @ConfigDir(sharedRoot = false)
-    private Path privateConfigDir;
-
-    private DTPunishmentConfig dtpunishmentConfig;
-    private ChatConfig chatconfig;
-    private DataStore datastore;
-
-    public DTPunishmentConfig getConfig(){
-        return dtpunishmentConfig;
-    }
-
-    public ChatConfig getChatConfig() {
-        return chatconfig;
-    }
-
-    public Path getConfigPath() {
-        return privateConfigDir;
-    }
-
-    public Path getDefaultConfig() {
-        return defaultConfig;
-    }
-
-    public Logger getLogger() {
-        return logger;
-    }
-
-    public DataStore getDatastore() {
-        if (datastore == null) {
-            datastore = (getConfig().database.enabled) ? new DatabaseDataStore(this) : new FileDataStore(this);
-        }
-        return datastore;
-    }
+    private MainConfig config;
 
     @Listener
     public void onServerPreInit(GamePreInitializationEvent event) {
-        getLogger().info("Enabling DTPunishment...");
+        logger.info("Enabling DTPunishment...");
 
-        getLogger().info("Config check...");
-        ConfigurationManager config = new ConfigurationManager(this);
-        config.generateConfig();
-        reloadConfiguration();      
-        config.init();
+        configurationManager.intialise();
+
+        // Create the child injector for the plugin
+        childInjector = injector.createChildInjector(new DTPunishmentModule(config));
     }
 
-    public void reloadConfiguration() {
-        try {
-            Path potentialFile = Paths.get(getConfigPath() + "\\chat.conf");
-            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(potentialFile).build();
-            getLogger().info("Initializing config...");
-            dtpunishmentConfig = defaultConfigLoader.load().getValue(DTPunishmentConfig.TYPE);
-            chatconfig = loader.load().getValue(ChatConfig.TYPE);
-        } catch (ObjectMappingException | IOException e) {
-            e.printStackTrace();
-        }
-    	
-    }
-    
     @Listener
     public void onServerInit(GameInitializationEvent event) {
-        getLogger().info("Registering listeners and commands...");
-        Sponge.getEventManager().registerListeners(this, new PlayerListener(this));
-        registerCommand();
+        logger.info("Registering listeners and commands...");
+        Sponge.getEventManager().registerListeners(this, childInjector.getInstance(PlayerListener.class));
+        registerCommands();
     }
 
+    private void registerCommands() {
 
-    private void registerCommand() {
-
-        CommandSpec showBanpoints = CommandSpec.builder()
-                .permission("dtpunishment.banpoints.show")
+        // We will have to use the injector to get the commands from the
+        // container
+        // since we couldn't setup the child injector before the plugin was
+        // instantiated
+        // alternatively we could create an init class that we resolve from the
+        // container
+        // but this is quick and dirty and we don't need more complexity yet
+        CommandSpec showBanpoints = CommandSpec.builder().permission("dtpunishment.banpoints.show")
                 .description(Text.of("Show how many Banpoints the specified player has "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))))
-                .executor(new CommandBanpointsShow(this))
-                .build();
+                .executor(childInjector.getInstance(CommandBanpointsShow.class)).build();
 
-        CommandSpec addBanpoints = CommandSpec.builder()
-                .permission("dtpunishment.banpoints.add")
+        CommandSpec addBanpoints = CommandSpec.builder().permission("dtpunishment.banpoints.add")
                 .description(Text.of("Add a specified amount of Banpoints to a player "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
-                .executor(new CommandBanpointsAdd(this))
-                .build();
+                .executor(childInjector.getInstance(CommandBanpointsAdd.class)).build();
 
-        CommandSpec removeBanpoints = CommandSpec.builder()
-                .permission("dtpunishment.banpoints.remove")
+        CommandSpec removeBanpoints = CommandSpec.builder().permission("dtpunishment.banpoints.remove")
                 .description(Text.of("Remove a specified amount of Banpoints to a player "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
-                .executor(new CommandBanpointsRemove(this))
-                .build();
+                .executor(childInjector.getInstance(CommandBanpointsRemove.class)).build();
 
-        CommandSpec banpoints = CommandSpec.builder()
-                .permission("dtpunishment.banpoints")
-                .description(Text.of("Show the Banpoints help menu"))
-                .arguments(GenericArguments.none())
-                .child(showBanpoints, "show")
-                .child(addBanpoints, "add")
-                .child(removeBanpoints, "remove")
-                .build();
+        CommandSpec banpoints = CommandSpec.builder().permission("dtpunishment.banpoints")
+                .description(Text.of("Show the Banpoints help menu")).arguments(GenericArguments.none())
+                .child(showBanpoints, "show").child(addBanpoints, "add").child(removeBanpoints, "remove").build();
 
         Sponge.getCommandManager().register(this, banpoints, "banpoints", "bp");
 
-
-
-        CommandSpec showMutepoints = CommandSpec.builder()
-                .permission("dtpunishment.mutepoints.show")
+        CommandSpec showMutepoints = CommandSpec.builder().permission("dtpunishment.mutepoints.show")
                 .description(Text.of("Show how many Mutepoints the specified player has "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))))
-                .executor(new CommandMutepointsShow(this))
-                .build();
+                .executor(childInjector.getInstance(CommandMutepointsShow.class)).build();
 
-        CommandSpec addMutepoints = CommandSpec.builder()
-                .permission("dtpunishment.mutepoints.add")
+        CommandSpec addMutepoints = CommandSpec.builder().permission("dtpunishment.mutepoints.add")
                 .description(Text.of("Add a specified amount of Mutepoints to a player "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
-                .executor(new CommandMutepointsAdd(this))
-                .build();
+                .executor(childInjector.getInstance(CommandMutepointsAdd.class)).build();
 
-        CommandSpec removeMutepoints = CommandSpec.builder()
-                .permission("dtpunishment.mutepoints.add")
+        CommandSpec removeMutepoints = CommandSpec.builder().permission("dtpunishment.mutepoints.add")
                 .description(Text.of("Add a specified amount of Mutepoints to a player "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
-                .executor(new CommandMutepointsRemove(this))
-                .build();
+                .executor(childInjector.getInstance(CommandMutepointsRemove.class)).build();
 
-        CommandSpec mutepoints = CommandSpec.builder()
-                .permission("dtpunishment.mutepoints")
-                .description(Text.of("Show the Mutepoints help menu"))
-                .arguments(GenericArguments.none())
-                .child(showMutepoints, "show")
-                .child(addMutepoints, "add")
-                .child(removeMutepoints, "remove")
-                .build();
+        CommandSpec mutepoints = CommandSpec.builder().permission("dtpunishment.mutepoints")
+                .description(Text.of("Show the Mutepoints help menu")).arguments(GenericArguments.none())
+                .child(showMutepoints, "show").child(addMutepoints, "add").child(removeMutepoints, "remove").build();
 
         Sponge.getCommandManager().register(this, mutepoints, "mutepoints", "mp");
 
-
-        CommandSpec playerInfo = CommandSpec.builder()
-                .permission("dtpunishment.playerinfo")
+        CommandSpec playerInfo = CommandSpec.builder().permission("dtpunishment.playerinfo")
                 .description(Text.of("Show your info "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.optionalWeak(GenericArguments.requiringPermission(
-                                GenericArguments.user(Text.of("player")), "dtpunishment.playerinfo.others"))))
-                .executor(new CommandPlayerInfo(this))
-                .build();
+                        GenericArguments.user(Text.of("player")), "dtpunishment.playerinfo.others"))))
+                .executor(childInjector.getInstance(CommandPlayerInfo.class)).build();
 
         Sponge.getCommandManager().register(this, playerInfo, "pinfo", "playerinfo");
 
-        CommandSpec addWord = CommandSpec.builder()
-                .permission("dtpunishment.word.add")
+        CommandSpec addWord = CommandSpec.builder().permission("dtpunishment.word.add")
                 .description(Text.of("Add a word to the list of banned ones "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("word"))))
-                .executor(new CommandWordAdd(this))
-                .build();
+                .executor(childInjector.getInstance(CommandWordAdd.class)).build();
 
         Sponge.getCommandManager().register(this, addWord, "addword");
-       
-        CommandSpec reloadConfig = CommandSpec.builder()
-                .permission("dtpunishment.admin.reload")
-                .description(Text.of("Reload configuration from disk"))
-                .executor(new CommandReloadConfig(this))
-                .build();
 
-        CommandSpec adminCmd = CommandSpec.builder()
-                .permission("dtpunishment.admin")
-                .description(Text.of("Admin commands for DTPunishment"))
-                .child(reloadConfig, "reload")
-                .build();       
-       
+        CommandSpec unmute = CommandSpec.builder().permission("dtpunishment.mutepoints.add")
+                .description(Text.of("Unmute a player immediately (removing all mutepoints)"))
+                .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))))
+                .executor(childInjector.getInstance(CommandUnmute.class)).build();
+
+        CommandSpec reloadConfig = CommandSpec.builder().permission("dtpunishment.admin.reload")
+                .description(Text.of("Reload configuration from disk"))
+                .executor(childInjector.getInstance(CommandReloadConfig.class)).build();
+
+        CommandSpec adminCmd = CommandSpec.builder().permission("dtpunishment.admin")
+                .description(Text.of("Admin commands for DTPunishment")).child(reloadConfig, "reload")
+                .child(unmute, "unmute").build();
+
         Sponge.getCommandManager().register(this, adminCmd, "dtp", "dtpunish");
     }
 }

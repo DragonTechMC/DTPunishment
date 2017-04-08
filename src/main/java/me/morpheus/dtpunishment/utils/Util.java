@@ -1,13 +1,13 @@
 package me.morpheus.dtpunishment.utils;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-
-import java.util.Optional;
-import java.util.UUID;
 
 public class Util {
 
@@ -16,13 +16,7 @@ public class Util {
         return userStorage.get().get(uuid);
     }
 
-    @Deprecated
-    public static Optional<User> getUser(String player) {
-        Optional<UserStorageService> userStorage = Sponge.getServiceManager().provide(UserStorageService.class);
-        return userStorage.get().get(player);
-    }
-
     public static Text.Builder getWatermark() {
-    	return Text.builder("[DTP] ").color(TextColors.GOLD);
+        return Text.builder("[DTP] ").color(TextColors.GOLD);
     }
 }

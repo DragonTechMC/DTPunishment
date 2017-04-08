@@ -1,7 +1,7 @@
 package me.morpheus.dtpunishment.commands.mutepoints;
 
-import me.morpheus.dtpunishment.DTPunishment;
-import me.morpheus.dtpunishment.utils.Util;
+import java.util.UUID;
+
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -10,27 +10,25 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
 
-import java.util.Optional;
-import java.util.UUID;
+import com.google.inject.Inject;
+
+import me.morpheus.dtpunishment.data.DataStore;
+import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandMutepointsShow implements CommandExecutor {
 
-    private final DTPunishment main;
-
-    public CommandMutepointsShow(DTPunishment main){
-        this.main = main;
-    }
-
-
+    @Inject
+    private DataStore dataStore;
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-    	User user = args.<User>getOne("player").get();
-        
+        User user = args.<User>getOne("player").get();
+
         UUID uuid = user.getUniqueId();
 
-        src.sendMessage(Util.getWatermark().append(Text.of(user.getName() + " has " + main.getDatastore().getMutepoints(uuid) + " mutepoints")).build());
-        main.getDatastore().finish();
+        src.sendMessage(Util.getWatermark()
+                .append(Text.of(user.getName() + " has " + dataStore.getMutepoints(uuid) + " mutepoints")).build());
+        dataStore.finish();
 
         return CommandResult.success();
 

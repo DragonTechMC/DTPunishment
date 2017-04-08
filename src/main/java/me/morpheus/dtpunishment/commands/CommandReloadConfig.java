@@ -6,20 +6,19 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 
-import me.morpheus.dtpunishment.DTPunishment;
+import com.google.inject.Inject;
+
+import me.morpheus.dtpunishment.configuration.ConfigurationManager;
 
 public class CommandReloadConfig implements CommandExecutor {
 
-	private final DTPunishment main;
+    @Inject
+    private ConfigurationManager configurationManager;
 
-	public CommandReloadConfig(DTPunishment main) {
-		this.main = main;
-	}
-	
-	@Override
-	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-		this.main.reloadConfiguration();
-		return CommandResult.success();
-	}
+    @Override
+    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        configurationManager.loadConfiguration();
+        return CommandResult.success();
+    }
 
 }

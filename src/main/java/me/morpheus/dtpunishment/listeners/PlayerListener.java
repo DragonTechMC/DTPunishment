@@ -1,11 +1,10 @@
 package me.morpheus.dtpunishment.listeners;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.UUID;
 
-import me.morpheus.dtpunishment.ChatWatcher;
-import me.morpheus.dtpunishment.DTPunishment;
-import me.morpheus.dtpunishment.penalty.MutepointsPunishment;
-import me.morpheus.dtpunishment.utils.Util;
-
+import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -15,87 +14,100 @@ import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.UUID;
+import com.google.inject.Inject;
+
+import me.morpheus.dtpunishment.ChatWatcher;
+import me.morpheus.dtpunishment.configuration.ChatConfig;
+import me.morpheus.dtpunishment.data.DataStore;
+import me.morpheus.dtpunishment.penalty.MutepointsPunishment;
+import me.morpheus.dtpunishment.utils.Util;
 
 public class PlayerListener {
 
-    private final DTPunishment main;
+    @Inject
+    private Logger logger;
 
-    public PlayerListener(DTPunishment main){
-        this.main = main;
-    }
+    @Inject
+    private DataStore dataStore;
+
+    @Inject
+    private ChatWatcher chatWatcher;
+
+    @Inject
+    private ChatConfig chatConfig;
+
+    @Inject
+    private MutepointsPunishment mutePunish;
 
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
 
         UUID uuid = event.getTargetEntity().getUniqueId();
-        if (!main.getDatastore().userExists(uuid)) {
-            main.getLogger().info(event.getTargetEntity().getName() + " not found, creating player data...");
-            main.getDatastore().createUser(uuid);
+        if (!dataStore.userExists(uuid)) {
+            logger.info(event.getTargetEntity().getName() + " not found, creating player data...");
+            dataStore.createUser(uuid);
         } else {
             LocalDate now = LocalDate.now();
-            if (now.isAfter(main.getDatastore().getMutepointsUpdatedAt(uuid).plusMonths(1))) {
-                int actual = main.getDatastore().getMutepoints(uuid);
+            if (now.isAfter(dataStore.getMutepointsUpdatedAt(uuid).plusMonths(1))) {
+                int actual = dataStore.getMutepoints(uuid);
                 int amount = (actual - 5 < 0) ? actual : 5;
-                main.getDatastore().removeMutepoints(uuid, amount);
-                main.getDatastore().addMutepoints(uuid, 0);
+                dataStore.removeMutepoints(uuid, amount);
+                dataStore.addMutepoints(uuid, 0);
             }
-            if (now.isAfter(main.getDatastore().getBanpointsUpdatedAt(uuid).plusMonths(1))) {
-                int actual = main.getDatastore().getBanpoints(uuid);
+            if (now.isAfter(dataStore.getBanpointsUpdatedAt(uuid).plusMonths(1))) {
+                int actual = dataStore.getBanpoints(uuid);
                 int amount = (actual - 1 < 0) ? actual : 1;
-                main.getDatastore().removeBanpoints(uuid, amount);
-                main.getDatastore().addBanpoints(uuid, 0);
+                dataStore.removeBanpoints(uuid, amount);
+                dataStore.addBanpoints(uuid, 0);
             }
         }
 
-        main.getDatastore().finish();
-
-
+        dataStore.finish();
     }
 
-
     @Listener
-    public void onPlayerChat(MessageChannelEvent.Chat event, @Root Player player){
+    public void onPlayerChat(MessageChannelEvent.Chat event, @Root Player player) {
 
         String message = event.getRawMessage().toPlain();
         UUID uuid = player.getUniqueId();
+        int mutePointsIncurred = 0;
 
-        ChatWatcher chatw = new ChatWatcher(main);
-
-
-        if (main.getDatastore().isMuted(uuid)) {
-            Instant expiration = main.getDatastore().getExpiration(uuid);
+        if (dataStore.isMuted(uuid)) {
+            Instant expiration = dataStore.getExpiration(uuid);
 
             if (Instant.now().isAfter(expiration)) {
-                main.getDatastore().unmute(uuid);
+                dataStore.unmute(uuid);
             } else {
-                main.getLogger().info("[Message cancelled] - " + event.getMessage().toPlain());
+                logger.info("[Message cancelled] - " + event.getMessage().toPlain());
                 event.setMessageCancelled(true);
             }
         } else {
 
-            if (chatw.isSpam(message, uuid)) {
-                int points = main.getChatConfig().spam.mutepoints;
-                main.getDatastore().addMutepoints(uuid, points);
+            if (chatWatcher.isSpam(message, uuid)) {
+                int points = chatConfig.spam.mutepoints;
+                mutePointsIncurred += points;
+                dataStore.addMutepoints(uuid, points);
                 event.setMessageCancelled(true);
             }
 
-            if (chatw.containBannedWords(message)) {
-                int points = main.getChatConfig().banned.mutepoints;
-                main.getDatastore().addMutepoints(uuid, points);
+            if (chatWatcher.containBannedWords(message)) {
+                int points = chatConfig.banned.mutepoints;
+                mutePointsIncurred += points;
+                dataStore.addMutepoints(uuid, points);
 
-                player.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, "You said a banned word; " +
-                        points + " mutepoint(s) have been added automatically, you now have " +
-                        main.getDatastore().getMutepoints(uuid) +
-                        ". If you believe this is an error, contact a staff member.")).build());
+                player.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, "You said a banned word; "
+                        + points + " mutepoint(s) have been added automatically, you now have "
+                        + dataStore.getMutepoints(uuid) + ". If you believe this is an error, contact a staff member."))
+                        .build());
 
                 for (Player p : Sponge.getServer().getOnlinePlayers()) {
                     if (p.hasPermission("dtpunishment.staff.notify")) {
-                        p.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, player.getName() + " said a banned word; " +
-                                points + " mutepoint(s) have been added automatically, they now have " +
-                                main.getDatastore().getMutepoints(uuid))).build());
+                        p.sendMessage(Util.getWatermark()
+                                .append(Text.of(TextColors.RED,
+                                        player.getName() + " said a banned word; " + points
+                                                + " mutepoint(s) have been added automatically, they now have "
+                                                + dataStore.getMutepoints(uuid)))
+                                .build());
                     }
                 }
 
@@ -103,35 +115,40 @@ public class PlayerListener {
 
             }
 
-            if (chatw.containUppercase(message)) {
-                int points = main.getChatConfig().caps.mutepoints;
+            if (chatWatcher.containUppercase(message)) {
+                int points = chatConfig.caps.mutepoints;
+                mutePointsIncurred += points;
 
-                main.getDatastore().addMutepoints(uuid, points);
+                dataStore.addMutepoints(uuid, points);
 
-                player.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, "You have exceeded the max percentage of caps allowed; " +
-                        points + " mutepoint(s) have been added automatically, you now have " +
-                        main.getDatastore().getMutepoints(uuid) +
-                        ". If you believe this is an error, contact a staff member.")).build());
+                player.sendMessage(Util.getWatermark()
+                        .append(Text.of(TextColors.RED,
+                                "You have exceeded the max percentage of caps allowed; " + points
+                                        + " mutepoint(s) have been added automatically, you now have "
+                                        + dataStore.getMutepoints(uuid)
+                                        + ". If you believe this is an error, contact a staff member."))
+                        .build());
                 for (Player p : Sponge.getServer().getOnlinePlayers()) {
                     if (p.hasPermission("dtpunishment.staff.notify")) {
-                        p.sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, player.getName() + " has exceeded the max percentage of caps allowed;  " +
-                                points + " mutepoint(s) have been added automatically, they now have " +
-                                main.getDatastore().getMutepoints(uuid))).build());
+                        p.sendMessage(Util.getWatermark()
+                                .append(Text.of(TextColors.RED,
+                                        player.getName() + " has exceeded the max percentage of caps allowed;  "
+                                                + points + " mutepoint(s) have been added automatically, they now have "
+                                                + dataStore.getMutepoints(uuid)))
+                                .build());
                     }
                 }
                 event.setMessageCancelled(true);
             }
 
+            logger.info(String.format("%s just incurred %d mutepoints", player.getName(), mutePointsIncurred));
 
+            if (mutePointsIncurred > 0) {
+                mutePunish.check(uuid, dataStore.getMutepoints(uuid));
+            }
 
-            MutepointsPunishment mutepunish = new MutepointsPunishment(main);
-
-            mutepunish.check(uuid, main.getDatastore().getMutepoints(uuid));
-
-            main.getDatastore().finish();
-
+            dataStore.finish();
         }
     }
-
 
 }

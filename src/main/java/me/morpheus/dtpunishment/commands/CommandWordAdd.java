@@ -1,47 +1,51 @@
 package me.morpheus.dtpunishment.commands;
 
-import com.google.common.reflect.TypeToken;
-import me.morpheus.dtpunishment.DTPunishment;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
+import org.spongepowered.api.config.ConfigDir;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+import com.google.common.reflect.TypeToken;
+import com.google.inject.Inject;
+
+import me.morpheus.dtpunishment.configuration.ChatConfig;
+import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
 public class CommandWordAdd implements CommandExecutor {
 
-    private final DTPunishment main;
+    @Inject
+    private ChatConfig chatConfig;
 
-    public CommandWordAdd(DTPunishment main){
-        this.main = main;
-    }
-
+    @Inject
+    @ConfigDir(sharedRoot = false)
+    private Path configDir;
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 
         String word = args.<String>getOne("word").get();
-        List<String> actual = main.getChatConfig().banned.words;
+        List<String> actual = chatConfig.banned.words;
         actual.add(word);
 
+        Path chatData = configDir.resolve("/chat.conf");
 
-        Path chatData = Paths.get(main.getConfigPath() + "/chat.conf");
-
-        ConfigurationLoader<CommentedConfigurationNode> loader =
-                HoconConfigurationLoader.builder().setPath(chatData).build();
+        ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(chatData)
+                .build();
         ConfigurationNode chatNode;
 
-        final TypeToken<List<String>> token = new TypeToken<List<String>>() {};
+        final TypeToken<List<String>> token = new TypeToken<List<String>>() {
+            private static final long serialVersionUID = 1L;
+        };
 
         try {
             chatNode = loader.load();
@@ -53,17 +57,6 @@ public class CommandWordAdd implements CommandExecutor {
 
         return CommandResult.success();
 
-
     }
-
-
-
-
-
-
-
-
-
-
 
 }
