@@ -87,6 +87,7 @@ public class PlayerListener {
                 int points = chatConfig.spam.mutepoints;
                 mutePointsIncurred += points;
                 dataStore.addMutepoints(uuid, points);
+                logger.info("[Message cancelled (spam)] - " + event.getMessage().toPlain());
                 event.setMessageCancelled(true);
             }
 
@@ -111,6 +112,7 @@ public class PlayerListener {
                     }
                 }
 
+                logger.info("[Message cancelled (banned words)] - " + event.getMessage().toPlain());
                 event.setMessageCancelled(true);
 
             }
@@ -138,6 +140,8 @@ public class PlayerListener {
                                 .build());
                     }
                 }
+
+                logger.info("[Message cancelled (uppercase)] - " + event.getMessage().toPlain());
                 event.setMessageCancelled(true);
             }
 
