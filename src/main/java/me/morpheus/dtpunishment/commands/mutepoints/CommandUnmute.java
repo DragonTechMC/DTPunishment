@@ -21,26 +21,28 @@ import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandUnmute implements CommandExecutor {
 
-	@Inject
-	private DataStore dataStore;
-	
-	@Override
-	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-		
-		User user = args.<User>getOne("player").get();
-		
+    @Inject
+    private DataStore dataStore;
+
+    @Override
+    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+
+        User user = args.<User>getOne("player").get();
+
         dataStore.unmute(user.getUniqueId());
-        
+
         // If player is online, notify them
         Optional<Player> player = user.getPlayer();
 
-        Text notification = Util.getWatermark().append(Text.of(TextColors.AQUA, String.format("%s has been unmuted by %s", user.getName(), src.getName()))).build();
+        Text notification = Util.getWatermark().append(
+                Text.of(TextColors.AQUA, String.format("%s has been unmuted by %s", user.getName(), src.getName())))
+                .build();
 
-        if(src instanceof ConsoleSource) 
-        	src.sendMessage(notification);
-        
-        if(player.isPresent()) {
-        	player.get().sendMessage(notification);        	
+        if (src instanceof ConsoleSource)
+            src.sendMessage(notification);
+
+        if (player.isPresent()) {
+            player.get().sendMessage(notification);
         }
 
         for (Player p : Sponge.getServer().getOnlinePlayers()) {
@@ -50,6 +52,6 @@ public class CommandUnmute implements CommandExecutor {
         }
 
         return CommandResult.success();
-	}
+    }
 
 }

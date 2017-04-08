@@ -1,11 +1,5 @@
 package me.morpheus.dtpunishment;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.inject.Inject;
-
-import me.morpheus.dtpunishment.configuration.ChatConfig;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,28 +8,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.inject.Inject;
+
+import me.morpheus.dtpunishment.configuration.ChatConfig;
+
 public class ChatWatcher {
 
-	@Inject 
-	private ChatConfig chatConfig;
-	
+    @Inject
+    private ChatConfig chatConfig;
+
     private static Map<UUID, List<String>> map = new HashMap<>();
     private static Instant previous;
 
-    public boolean containBannedWords(String message){
+    public boolean containBannedWords(String message) {
 
         List<String> list = chatConfig.banned.words;
 
         for (String s : list) {
-            if (message.replaceAll("(?ix)[\\W]", "").contains(s)) return true;
+            if (message.replaceAll("(?ix)[\\W]", "").contains(s))
+                return true;
         }
         return false;
     }
 
     public boolean containUppercase(String message) {
 
-        if (message.replaceAll("[\\W]", "").length() <= chatConfig.caps.minimum_length) 
-        	return false;
+        if (message.replaceAll("[\\W]", "").length() <= chatConfig.caps.minimum_length)
+            return false;
 
         String[] words = message.split("\\s+");
         int upper = 0;
@@ -46,10 +47,12 @@ public class ChatWatcher {
 
             total += cleaned.length();
 
-            if (StringUtils.isAllLowerCase(cleaned)) continue;
+            if (StringUtils.isAllLowerCase(cleaned))
+                continue;
 
             for (int i = 0; i < cleaned.length(); i++) {
-                if (Character.isUpperCase(cleaned.charAt(i))) upper++;
+                if (Character.isUpperCase(cleaned.charAt(i)))
+                    upper++;
             }
 
         }
@@ -63,7 +66,8 @@ public class ChatWatcher {
         Instant now = Instant.now();
         message = StringUtils.lowerCase(message);
 
-        if (previous == null || now.isAfter(previous.plusSeconds(chatConfig.spam.seconds))) map.clear();
+        if (previous == null || now.isAfter(previous.plusSeconds(chatConfig.spam.seconds)))
+            map.clear();
 
         previous = now;
 
@@ -80,11 +84,5 @@ public class ChatWatcher {
 
         return count > chatConfig.spam.max_messages;
     }
-
-
-
-
-
-
 
 }

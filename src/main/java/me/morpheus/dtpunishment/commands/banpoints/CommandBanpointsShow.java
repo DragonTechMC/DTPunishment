@@ -1,7 +1,7 @@
 package me.morpheus.dtpunishment.commands.banpoints;
 
-import me.morpheus.dtpunishment.data.DataStore;
-import me.morpheus.dtpunishment.utils.Util;
+import java.util.UUID;
+
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -12,25 +12,25 @@ import org.spongepowered.api.text.Text;
 
 import com.google.inject.Inject;
 
-import java.util.UUID;
+import me.morpheus.dtpunishment.data.DataStore;
+import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandBanpointsShow implements CommandExecutor {
 
-	@Inject
-	private DataStore dataStore;
+    @Inject
+    private DataStore dataStore;
 
-	
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         User user = args.<User>getOne("player").get();
-        
+
         UUID uuid = user.getUniqueId();
 
-        src.sendMessage(Util.getWatermark().append(Text.of(user.getName() + " has " + dataStore.getBanpoints(uuid) + " banpoints")).build());
+        src.sendMessage(Util.getWatermark()
+                .append(Text.of(user.getName() + " has " + dataStore.getBanpoints(uuid) + " banpoints")).build());
         dataStore.finish();
 
         return CommandResult.success();
-
 
     }
 }

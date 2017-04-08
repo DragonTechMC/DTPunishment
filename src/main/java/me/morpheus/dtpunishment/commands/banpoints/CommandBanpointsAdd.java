@@ -1,8 +1,7 @@
 package me.morpheus.dtpunishment.commands.banpoints;
 
-import me.morpheus.dtpunishment.data.DataStore;
-import me.morpheus.dtpunishment.penalty.BanpointsPunishment;
-import me.morpheus.dtpunishment.utils.Util;
+import java.util.UUID;
+
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -17,16 +16,18 @@ import org.spongepowered.api.text.format.TextColors;
 
 import com.google.inject.Inject;
 
-import java.util.UUID;
+import me.morpheus.dtpunishment.data.DataStore;
+import me.morpheus.dtpunishment.penalty.BanpointsPunishment;
+import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandBanpointsAdd implements CommandExecutor {
 
-	@Inject
-	private DataStore dataStore;
-	
-	@Inject
-	private BanpointsPunishment banPunish;
-	
+    @Inject
+    private DataStore dataStore;
+
+    @Inject
+    private BanpointsPunishment banPunish;
+
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         User user = args.<User>getOne("player").get();
@@ -39,17 +40,21 @@ public class CommandBanpointsAdd implements CommandExecutor {
         int post = dataStore.getBanpoints(uuid);
 
         if (user.isOnline()) {
-            user.getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, amount + " banpoints have been added; you now have " + post)).build());
+            user.getPlayer().get()
+                    .sendMessage(Util.getWatermark().append(
+                            Text.of(TextColors.RED, amount + " banpoints have been added; you now have " + post))
+                            .build());
         }
 
-    	Text adminMessage = Util.getWatermark().append(
-				Text.of(TextColors.RED, String.format("%s has added %d banpoint(s) to %s; they now have %d", src.getName(), amount, name, post))).build();
+        Text adminMessage = Util.getWatermark().append(Text.of(TextColors.RED, String
+                .format("%s has added %d banpoint(s) to %s; they now have %d", src.getName(), amount, name, post)))
+                .build();
 
-    	if(src instanceof ConsoleSource)
-    		src.sendMessage(adminMessage);
-    	
+        if (src instanceof ConsoleSource)
+            src.sendMessage(adminMessage);
+
         for (Player p : Sponge.getServer().getOnlinePlayers()) {
-            if (p.hasPermission("dtpunishment.staff.notify") || p.getPlayer().get() == src) {
+            if (p.hasPermission("dtpunishment.staff.notify") || p == src) {
                 p.sendMessage(adminMessage);
             }
         }

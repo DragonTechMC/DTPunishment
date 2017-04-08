@@ -1,10 +1,5 @@
 package me.morpheus.dtpunishment.data;
 
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,15 +12,20 @@ import org.spongepowered.api.config.ConfigDir;
 
 import com.google.inject.Inject;
 
+import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
+
 public class FileDataStore implements DataStore {
 
-	@Inject
-	private Logger logger;
-	
-	@Inject
-	@ConfigDir(sharedRoot = false)
-	private Path configDir;
-	
+    @Inject
+    private Logger logger;
+
+    @Inject
+    @ConfigDir(sharedRoot = false)
+    private Path configDir;
+
     private ConfigurationLoader<CommentedConfigurationNode> loader;
 
     private ConfigurationNode node;
@@ -43,7 +43,7 @@ public class FileDataStore implements DataStore {
         loader = HoconConfigurationLoader.builder().setPath(playerData).build();
         try {
             node = loader.load();
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -163,7 +163,7 @@ public class FileDataStore implements DataStore {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
         initPlayerConfig(player);
         node.getNode("points", "bUpdatedAt").setValue(String.valueOf(LocalDate.now()));
         node.getNode("points", "banpoints").setValue(0);
@@ -179,8 +179,8 @@ public class FileDataStore implements DataStore {
         return Files.exists(playerData);
     }
 
-	@Override
-	public void finish() {
-		
-	}
+    @Override
+    public void finish() {
+
+    }
 }

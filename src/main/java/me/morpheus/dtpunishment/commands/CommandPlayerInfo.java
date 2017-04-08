@@ -1,7 +1,8 @@
 package me.morpheus.dtpunishment.commands;
 
-import me.morpheus.dtpunishment.data.DataStore;
-import me.morpheus.dtpunishment.utils.Util;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -13,14 +14,14 @@ import org.spongepowered.api.text.Text;
 
 import com.google.inject.Inject;
 
-import java.util.Optional;
-import java.util.UUID;
+import me.morpheus.dtpunishment.data.DataStore;
+import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandPlayerInfo implements CommandExecutor {
 
-	@Inject 
-	private DataStore dataStore;
-	
+    @Inject
+    private DataStore dataStore;
+
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         Optional<User> player = args.getOne("player");

@@ -1,5 +1,7 @@
 package me.morpheus.dtpunishment.configuration;
 
+import java.util.Collections;
+import java.util.List;
 
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Singleton;
@@ -7,60 +9,57 @@ import com.google.inject.Singleton;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
-import java.util.Collections;
-import java.util.List;
-
 @Singleton
 @ConfigSerializable
 public class ChatConfig {
 
     public static final TypeToken<ChatConfig> TYPE = TypeToken.of(ChatConfig.class);
 
-   	@Setting
+    @Setting
     public Banned banned;
-   	
-   	@Setting
+
+    @Setting
     public Caps caps;
-    
-   	@Setting
+
+    @Setting
     public Spam spam;
 
     public ChatConfig() {
-    	banned = new ChatConfig.Banned();
-    	caps = new ChatConfig.Caps();
-    	spam = new ChatConfig.Spam();
-    }    
+        banned = new ChatConfig.Banned();
+        caps = new ChatConfig.Caps();
+        spam = new ChatConfig.Spam();
+    }
 
     @ConfigSerializable
     public static class Banned {
-    	@Setting
+        @Setting
         public int mutepoints = 4;
- 
-       	@Setting
+
+        @Setting
         public List<String> words = Collections.emptyList();
     }
 
     @ConfigSerializable
     public static class Caps {
-       	@Setting
+        @Setting
         public int mutepoints = 4;
-       	
-       	@Setting
+
+        @Setting
         public int minimum_length = 3;
-       	
-       	@Setting
+
+        @Setting
         public int percentage = 50;
     }
 
     @ConfigSerializable
     public static class Spam {
-       	@Setting
+        @Setting
         public int max_messages = 3;
-       	
-       	@Setting
+
+        @Setting
         public int seconds = 10;
-       	
-       	@Setting
+
+        @Setting
         public int mutepoints = 1;
     }
 }

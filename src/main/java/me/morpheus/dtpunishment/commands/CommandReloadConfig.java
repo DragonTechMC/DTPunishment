@@ -12,13 +12,13 @@ import me.morpheus.dtpunishment.configuration.ConfigurationManager;
 
 public class CommandReloadConfig implements CommandExecutor {
 
-	@Inject
-	private ConfigurationManager configurationManager;
+    @Inject
+    private ConfigurationManager configurationManager;
 
-	@Override
-	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-		configurationManager.loadConfiguration();
-		return CommandResult.success();
-	}
+    @Override
+    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        configurationManager.loadConfiguration();
+        return CommandResult.success();
+    }
 
 }
