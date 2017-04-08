@@ -28,14 +28,9 @@ public class CommandMutepointsRemove implements CommandExecutor {
 
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-		Optional<User> user = Util.getUser(args.<String>getOne("player").get());
-		if (!user.isPresent()) {
-			src.sendMessage(Util.getWatermark().append(Text.of(args.<String>getOne("player").get() + " never joined your server ")).build());
-			return CommandResult.empty();
-		}
-
-		UUID uuid = user.get().getUniqueId();
-		String name = user.get().getName();
+		User user = args.<User>getOne("player").get();
+		UUID uuid = user.getUniqueId();
+		String name = user.getName();
 		int actual = main.getDatastore().getMutepoints(uuid);
 		int amount = args.<Integer>getOne("amount").get();
 
@@ -45,8 +40,8 @@ public class CommandMutepointsRemove implements CommandExecutor {
 		main.getDatastore().removeMutepoints(uuid, amount);
 		main.getDatastore().finish();
 
-		if (user.get().isOnline()) {
-			user.get().getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.AQUA, amount + " mutepoints have been removed; you now have " + total)).build());
+		if (user.isOnline()) {
+			user.getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.AQUA, amount + " mutepoints have been removed; you now have " + total)).build());
 		}
 
 		Text adminMessage = Util.getWatermark().append(
@@ -54,7 +49,7 @@ public class CommandMutepointsRemove implements CommandExecutor {
 
 		if(src instanceof ConsoleSource)
 			src.sendMessage(adminMessage);
-		
+
 		for (Player p : Sponge.getServer().getOnlinePlayers()) {
 			if (p.hasPermission("dtpunishment.staff.notify") || src == p.getPlayer().get()) {
 				p.sendMessage(adminMessage);

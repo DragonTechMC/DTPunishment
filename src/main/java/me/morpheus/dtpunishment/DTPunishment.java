@@ -126,14 +126,14 @@ public class DTPunishment {
         CommandSpec showBanpoints = CommandSpec.builder()
                 .permission("dtpunishment.banpoints.show")
                 .description(Text.of("Show how many Banpoints the specified player has "))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
+                .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))))
                 .executor(new CommandBanpointsShow(this))
                 .build();
 
         CommandSpec addBanpoints = CommandSpec.builder()
                 .permission("dtpunishment.banpoints.add")
                 .description(Text.of("Add a specified amount of Banpoints to a player "))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))),
+                .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
                 .executor(new CommandBanpointsAdd(this))
                 .build();
@@ -141,7 +141,7 @@ public class DTPunishment {
         CommandSpec removeBanpoints = CommandSpec.builder()
                 .permission("dtpunishment.banpoints.remove")
                 .description(Text.of("Remove a specified amount of Banpoints to a player "))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))),
+                .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
                 .executor(new CommandBanpointsRemove(this))
                 .build();
@@ -162,14 +162,14 @@ public class DTPunishment {
         CommandSpec showMutepoints = CommandSpec.builder()
                 .permission("dtpunishment.mutepoints.show")
                 .description(Text.of("Show how many Mutepoints the specified player has "))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))))
+                .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))))
                 .executor(new CommandMutepointsShow(this))
                 .build();
 
         CommandSpec addMutepoints = CommandSpec.builder()
                 .permission("dtpunishment.mutepoints.add")
                 .description(Text.of("Add a specified amount of Mutepoints to a player "))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))),
+                .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
                 .executor(new CommandMutepointsAdd(this))
                 .build();
@@ -177,7 +177,7 @@ public class DTPunishment {
         CommandSpec removeMutepoints = CommandSpec.builder()
                 .permission("dtpunishment.mutepoints.add")
                 .description(Text.of("Add a specified amount of Mutepoints to a player "))
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("player"))),
+                .arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))),
                         GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
                 .executor(new CommandMutepointsRemove(this))
                 .build();
@@ -198,7 +198,7 @@ public class DTPunishment {
                 .permission("dtpunishment.playerinfo")
                 .description(Text.of("Show your info "))
                 .arguments(GenericArguments.onlyOne(GenericArguments.optionalWeak(GenericArguments.requiringPermission(
-                                GenericArguments.string(Text.of("player")), "dtpunishment.playerinfo.others"))))
+                                GenericArguments.user(Text.of("player")), "dtpunishment.playerinfo.others"))))
                 .executor(new CommandPlayerInfo(this))
                 .build();
 

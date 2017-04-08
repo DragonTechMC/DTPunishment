@@ -28,22 +28,17 @@ public class CommandBanpointsAdd implements CommandExecutor {
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Optional<User> user = Util.getUser(args.<String>getOne("player").get());
-        if (!user.isPresent()) {
-            src.sendMessage(Util.getWatermark().append(Text.of(args.<String>getOne("player").get() + " never joined your server ")).build());
-            return CommandResult.empty();
-        }
-
-        UUID uuid = user.get().getUniqueId();
-        String name = user.get().getName();
+        User user = args.<User>getOne("player").get();
+        UUID uuid = user.getUniqueId();
+        String name = user.getName();
         int amount = args.<Integer>getOne("amount").get();
 
         main.getDatastore().addBanpoints(uuid, amount);
 
         int post = main.getDatastore().getBanpoints(uuid);
 
-        if (user.get().isOnline()) {
-            user.get().getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, amount + " banpoints have been added; you now have " + post)).build());
+        if (user.isOnline()) {
+            user.getPlayer().get().sendMessage(Util.getWatermark().append(Text.of(TextColors.RED, amount + " banpoints have been added; you now have " + post)).build());
         }
 
     	Text adminMessage = Util.getWatermark().append(
@@ -59,13 +54,10 @@ public class CommandBanpointsAdd implements CommandExecutor {
         }
 
         BanpointsPunishment banpunish = new BanpointsPunishment(main);
-
         banpunish.check(uuid, post);
 
         main.getDatastore().finish();
 
         return CommandResult.success();
-
-
     }
 }

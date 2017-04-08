@@ -25,17 +25,11 @@ public class CommandBanpointsShow implements CommandExecutor {
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+        User user = args.<User>getOne("player").get();
+        
+        UUID uuid = user.getUniqueId();
 
-
-        Optional<User> user = Util.getUser(args.<String>getOne("player").get());
-        if (!user.isPresent()) {
-            src.sendMessage(Util.getWatermark().append(Text.of(args.<String>getOne("player").get() + " never joined your server ")).build());
-            return CommandResult.empty();
-        }
-
-        UUID uuid = user.get().getUniqueId();
-
-        src.sendMessage(Util.getWatermark().append(Text.of(user.get().getName() + " has " + main.getDatastore().getBanpoints(uuid) + " banpoints")).build());
+        src.sendMessage(Util.getWatermark().append(Text.of(user.getName() + " has " + main.getDatastore().getBanpoints(uuid) + " banpoints")).build());
         main.getDatastore().finish();
 
         return CommandResult.success();
