@@ -26,7 +26,7 @@ public class PunishmentLengthSerializer implements TypeSerializer<PunishmentLeng
         if (obj.duration.toDays() > 0) {
             value.setValue(obj.duration.toDays() + "d");
         } else if (obj.duration.toHours() > 0) {
-            value.setValue(obj.duration.toDays() + "h");
+            value.setValue(obj.duration.toHours() + "h");
         } else if (obj.duration.toMinutes() > 0) {
             value.setValue(obj.duration.toMinutes() + "m");
         } else {
