@@ -1,7 +1,7 @@
 package me.morpheus.dtpunishment.configuration;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Singleton;
@@ -18,11 +18,11 @@ public class MainConfig {
     public Database database;
 
     @Setting
-    public Punishment punishment;
+    public Punishments punishments;
 
     public MainConfig() {
         database = new MainConfig.Database();
-        punishment = new MainConfig.Punishment();
+        punishments = new MainConfig.Punishments();
     }
 
     @ConfigSerializable
@@ -48,42 +48,77 @@ public class MainConfig {
     }
 
     @ConfigSerializable
-    public static class Punishment {
+    public static class Punishments {
 
-        public Punishment() {
-            banpoints = new HashMap<String, String>();
-            banpoints.put("10 banpoints", "1d");
-            banpoints.put("20 banpoints", "2d");
-            banpoints.put("30 banpoints", "3d");
-            banpoints.put("40 banpoints", "4d");
-            banpoints.put("50 banpoints", "5d");
-            banpoints.put("60 banpoints", "6d");
-            banpoints.put("70 banpoints", "7d");
-            banpoints.put("80 banpoints", "14d");
-            banpoints.put("90 banpoints", "28d");
-            banpoints.put("100 banpoints", "168d");
+        public static Punishment createPunishment(int threshold, String duration, int banpoints) {
+            Punishment punishment = new Punishment();
 
-            mutepoints = new HashMap<String, String>();
-            mutepoints.put("5 mutepoints", "5m");
-            mutepoints.put("10 mutepoints", "10m");
-            mutepoints.put("20 mutepoints", "30m");
-            mutepoints.put("30 mutepoints", "60m");
-            mutepoints.put("40 mutepoints", "+1bp");
-            mutepoints.put("50 mutepoints", "+2bp");
-            mutepoints.put("60 mutepoints", "+3bp");
-            mutepoints.put("70 mutepoints", "+4bp");
-            mutepoints.put("80 mutepoints", "+5bp");
-            mutepoints.put("90 mutepoints", "+10bp");
-            mutepoints.put("100 mutepoints", "+20bp");
-            mutepoints.put("110 mutepoints", "+30bp");
-            mutepoints.put("120 mutepoints", "+50bp");
-            mutepoints.put("130 mutepoints", "+100bp");
+            punishment.threshold = threshold;
+            punishment.length = PunishmentLengthSerializer.getPunishmentLength(duration);
+            punishment.banpoints = banpoints;
+            return punishment;
+        }
+
+        public static Punishment createPunishment(int threshold, String duration) {
+            return createPunishment(threshold, duration, 0);
+        }
+
+        public Punishment getApplicableBanpointsPunishment(int points) {
+            Punishment punishment = null;
+
+            for (Punishment potential : banpoints) {
+                if (potential.threshold <= points)
+                    punishment = potential;
+            }
+
+            return punishment;
+        }
+
+        public Punishment getApplicableMutepointsPunishment(int points) {
+            Punishment punishment = null;
+
+            for (Punishment potential : mutepoints) {
+                if (potential.threshold <= points)
+                    punishment = potential;
+            }
+
+            return punishment;
+        }
+
+        public Punishments() {
+            banpoints = new ArrayList<Punishment>();
+            banpoints.add(createPunishment(10, "1d"));
+            banpoints.add(createPunishment(20, "2d"));
+            banpoints.add(createPunishment(30, "3d"));
+            banpoints.add(createPunishment(40, "4d"));
+            banpoints.add(createPunishment(50, "5d"));
+            banpoints.add(createPunishment(60, "6d"));
+            banpoints.add(createPunishment(70, "7d"));
+            banpoints.add(createPunishment(80, "14d"));
+            banpoints.add(createPunishment(90, "28d"));
+            banpoints.add(createPunishment(100, "168d"));
+
+            mutepoints = new ArrayList<Punishment>();
+            mutepoints.add(createPunishment(5, "5m"));
+            mutepoints.add(createPunishment(10, "10m"));
+            mutepoints.add(createPunishment(20, "30m"));
+            mutepoints.add(createPunishment(30, "60m"));
+            mutepoints.add(createPunishment(40, "60m", 1));
+            mutepoints.add(createPunishment(50, "60m", 2));
+            mutepoints.add(createPunishment(60, "60m", 3));
+            mutepoints.add(createPunishment(70, "60m", 4));
+            mutepoints.add(createPunishment(80, "60m", 5));
+            mutepoints.add(createPunishment(90, "60m", 10));
+            mutepoints.add(createPunishment(100, "60m", 20));
+            mutepoints.add(createPunishment(110, "60m", 30));
+            mutepoints.add(createPunishment(120, "60m", 50));
+            mutepoints.add(createPunishment(130, "60m", 100));
         }
 
         @Setting
-        public Map<String, String> banpoints;
+        public List<Punishment> banpoints;
 
         @Setting
-        public Map<String, String> mutepoints;
+        public List<Punishment> mutepoints;
     }
 }

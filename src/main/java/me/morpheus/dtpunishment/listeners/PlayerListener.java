@@ -79,6 +79,12 @@ public class PlayerListener {
                 dataStore.unmute(uuid);
             } else {
                 logger.info("[Message cancelled] - " + event.getMessage().toPlain());
+                player.sendMessage(
+                        Util.getWatermark()
+                                .append(Text.of(TextColors.RED,
+                                        String.format("You have been muted until %s for exceeding %d points",
+                                                Util.instantToString(expiration), dataStore.getMutepoints(uuid))))
+                                .build());
                 event.setMessageCancelled(true);
             }
         } else {
