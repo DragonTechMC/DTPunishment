@@ -10,6 +10,7 @@ import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
@@ -25,7 +26,10 @@ import me.morpheus.dtpunishment.commands.mutepoints.CommandMutepointsShow;
 import me.morpheus.dtpunishment.commands.mutepoints.CommandUnmute;
 import me.morpheus.dtpunishment.configuration.ConfigurationManager;
 import me.morpheus.dtpunishment.configuration.MainConfig;
+import me.morpheus.dtpunishment.configuration.PunishmentLength;
+import me.morpheus.dtpunishment.configuration.PunishmentLengthSerializer;
 import me.morpheus.dtpunishment.listeners.PlayerListener;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 
 @Plugin(id = "dtpunishment", name = "DTPunishment")
 public class DTPunishment {
@@ -43,6 +47,15 @@ public class DTPunishment {
 
     @Inject
     private MainConfig config;
+
+    public DTPunishment() {
+        registerSerializers();
+    }
+
+    private void registerSerializers() {
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(PunishmentLength.class),
+                new PunishmentLengthSerializer());
+    }
 
     @Listener
     public void onServerPreInit(GamePreInitializationEvent event) {
