@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import org.slf4j.Logger;
+import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -24,11 +25,19 @@ import me.morpheus.dtpunishment.utils.Util;
 @Singleton
 public class BanpointsPunishment {
 
-    @Inject
     private MainConfig mainConfig;
 
-    @Inject
     private Logger logger;
+
+    private Server server;
+
+    @Inject
+    public BanpointsPunishment(MainConfig mainConfig, Logger logger, Server server) {
+        this.mainConfig = mainConfig;
+        this.logger = logger;
+        this.server = server;
+        logger.info("Got server object: " + server);
+    }
 
     public void check(UUID uuid, int amount) {
 

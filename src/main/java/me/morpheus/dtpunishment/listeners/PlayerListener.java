@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import org.slf4j.Logger;
+import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -24,20 +25,28 @@ import me.morpheus.dtpunishment.utils.Util;
 
 public class PlayerListener {
 
-    @Inject
     private Logger logger;
 
-    @Inject
     private DataStore dataStore;
 
-    @Inject
     private ChatWatcher chatWatcher;
 
-    @Inject
     private ChatConfig chatConfig;
 
-    @Inject
     private MutepointsPunishment mutePunish;
+
+    private Server server;
+
+    @Inject
+    public PlayerListener(Logger logger, DataStore dataStore, ChatWatcher chatWatcher, ChatConfig chatConfig,
+            MutepointsPunishment mutePunish, Server server) {
+        this.logger = logger;
+        this.dataStore = dataStore;
+        this.chatWatcher = chatWatcher;
+        this.chatConfig = chatConfig;
+        this.mutePunish = mutePunish;
+        this.server = server;
+    }
 
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
@@ -50,19 +59,20 @@ public class PlayerListener {
             LocalDate now = LocalDate.now();
             if (now.isAfter(dataStore.getMutepointsUpdatedAt(uuid).plusMonths(1))) {
                 int actual = dataStore.getMutepoints(uuid);
-                int amount = (actual - 5 < 0) ? actual : 5;
+                int amount = Math.min(5, actual);
                 dataStore.removeMutepoints(uuid, amount);
                 dataStore.addMutepoints(uuid, 0);
             }
             if (now.isAfter(dataStore.getBanpointsUpdatedAt(uuid).plusMonths(1))) {
                 int actual = dataStore.getBanpoints(uuid);
-                int amount = (actual - 1 < 0) ? actual : 1;
-                dataStore.removeBanpoints(uuid, amount);
-                dataStore.addBanpoints(uuid, 0);
+
+                if (actual > 0) {
+                    int amount = 1;
+                    dataStore.removeBanpoints(uuid, amount);
+                    dataStore.addBanpoints(uuid, 0);
+                }
             }
         }
-
-        dataStore.finish();
     }
 
     @Listener
@@ -107,7 +117,7 @@ public class PlayerListener {
                         + dataStore.getMutepoints(uuid) + ". If you believe this is an error, contact a staff member."))
                         .build());
 
-                for (Player p : Sponge.getServer().getOnlinePlayers()) {
+                for (Player p : server.getOnlinePlayers()) {
                     if (p.hasPermission("dtpunishment.staff.notify")) {
                         p.sendMessage(Util.getWatermark()
                                 .append(Text.of(TextColors.RED,
@@ -136,7 +146,7 @@ public class PlayerListener {
                                         + dataStore.getMutepoints(uuid)
                                         + ". If you believe this is an error, contact a staff member."))
                         .build());
-                for (Player p : Sponge.getServer().getOnlinePlayers()) {
+                for (Player p : server.getOnlinePlayers()) {
                     if (p.hasPermission("dtpunishment.staff.notify")) {
                         p.sendMessage(Util.getWatermark()
                                 .append(Text.of(TextColors.RED,
@@ -156,8 +166,6 @@ public class PlayerListener {
             if (mutePointsIncurred > 0) {
                 mutePunish.check(uuid, dataStore.getMutepoints(uuid));
             }
-
-            dataStore.finish();
         }
     }
 

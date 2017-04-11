@@ -61,8 +61,6 @@ public class CommandBanpointsAdd implements CommandExecutor {
 
         banPunish.check(uuid, post);
 
-        dataStore.finish();
-
         return CommandResult.success();
     }
 }

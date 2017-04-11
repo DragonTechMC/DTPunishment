@@ -31,7 +31,7 @@ import me.morpheus.dtpunishment.configuration.PunishmentLengthSerializer;
 import me.morpheus.dtpunishment.listeners.PlayerListener;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 
-@Plugin(id = "dtpunishment", name = "DTPunishment")
+@Plugin(id = "dtpunishment", name = "DTPunishment", description = "Dragon Tech Punishment: a unique chat safeguard plugin")
 public class DTPunishment {
 
     @Inject
@@ -64,12 +64,16 @@ public class DTPunishment {
         configurationManager.intialise();
 
         // Create the child injector for the plugin
+        logger.info("Creating child injector");
         childInjector = injector.createChildInjector(new DTPunishmentModule(config));
     }
 
     @Listener
     public void onServerInit(GameInitializationEvent event) {
         logger.info("Registering listeners and commands...");
+        logger.info("" + Sponge.getEventManager());
+        logger.info("" + childInjector);
+        logger.info("" + childInjector.getInstance(PlayerListener.class));
         Sponge.getEventManager().registerListeners(this, childInjector.getInstance(PlayerListener.class));
         registerCommands();
     }

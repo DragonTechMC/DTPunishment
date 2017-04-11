@@ -1,5 +1,11 @@
 package me.morpheus.dtpunishment;
 
+import org.spongepowered.api.Server;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.asset.AssetManager;
+import org.spongepowered.api.command.CommandManager;
+import org.spongepowered.api.event.EventManager;
+
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
@@ -26,6 +32,10 @@ public class DTPunishmentModule implements Module {
             binder.bind(DataStore.class).to(MySqlDataStore.class).in(Scopes.SINGLETON);
         else
             binder.bind(DataStore.class).to(FileDataStore.class).in(Scopes.SINGLETON);
+
+        // Sponge deps that aren't in the container already
+        binder.bind(Server.class).toInstance(Sponge.getServer());
+        binder.bind(CommandManager.class).toInstance(Sponge.getCommandManager());
     }
 
 }

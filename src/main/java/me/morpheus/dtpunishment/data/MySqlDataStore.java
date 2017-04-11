@@ -37,15 +37,12 @@ public class MySqlDataStore implements DataStore {
         String user = mainConfig.database.username;
         String pass = mainConfig.database.password;
 
-        return "jdbc:mysql://" + user + ":" + pass + "@" + host + ":" + port + "/" + name;
+        return String.format("jdbc:mysql://%s:%s@%s:%d/%s", user, pass, host, port, name);
     }
-
-    private Connection conn;
 
     @Override
     public void init() {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             conn.prepareStatement("CREATE TABLE IF NOT EXISTS dtpunishment (\n" + "ID int NOT NULL AUTO_INCREMENT,\n"
                     + "UUID varchar(64) NOT NULL,\n" + "Banpoints SMALLINT,\n" + "BanUpdatedAt VARCHAR(32),\n"
                     + "Mutepoints SMALLINT,\n" + "MuteUpdatedAt VARCHAR(32),\n" + "IsMuted BOOLEAN,\n"
@@ -57,8 +54,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public int getBanpoints(UUID player) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             ResultSet set = conn.prepareStatement("SELECT Banpoints FROM dtpunishment WHERE UUID=\"" + player + "\";")
                     .executeQuery();
             set.next();
@@ -71,8 +67,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public LocalDate getBanpointsUpdatedAt(UUID player) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             ResultSet set = conn
                     .prepareStatement("SELECT BanUpdatedAt FROM dtpunishment WHERE UUID=\"" + player + "\";")
                     .executeQuery();
@@ -86,8 +81,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public int getMutepoints(UUID player) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             ResultSet set = conn.prepareStatement("SELECT Mutepoints FROM dtpunishment WHERE UUID=\"" + player + "\";")
                     .executeQuery();
             set.next();
@@ -100,8 +94,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public LocalDate getMutepointsUpdatedAt(UUID player) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             ResultSet set = conn
                     .prepareStatement("SELECT MuteUpdatedAt FROM dtpunishment WHERE UUID=\"" + player + "\";")
                     .executeQuery();
@@ -115,8 +108,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public boolean isMuted(UUID player) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             ResultSet set = conn.prepareStatement("SELECT IsMuted FROM dtpunishment WHERE UUID=\"" + player + "\";")
                     .executeQuery();
             set.next();
@@ -129,8 +121,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public Instant getExpiration(UUID player) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             ResultSet set = conn.prepareStatement("SELECT Until FROM dtpunishment WHERE UUID=\"" + player + "\";")
                     .executeQuery();
             set.next();
@@ -143,8 +134,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public void addBanpoints(UUID player, int amount) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             conn.prepareStatement(
                     "UPDATE dtpunishment SET Banpoints = Banpoints + " + amount + " WHERE UUID=\"" + player + "\";")
                     .executeUpdate();
@@ -160,8 +150,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public void removeBanpoints(UUID player, int amount) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             conn.prepareStatement(
                     "UPDATE dtpunishment SET Banpoints = Banpoints - " + amount + " WHERE UUID=\"" + player + "\";")
                     .executeUpdate();
@@ -172,8 +161,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public void addMutepoints(UUID player, int amount) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             conn.prepareStatement(
                     "UPDATE dtpunishment SET Mutepoints = Mutepoints + " + amount + " WHERE UUID=\"" + player + "\";")
                     .executeUpdate();
@@ -187,8 +175,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public void removeMutepoints(UUID player, int amount) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             conn.prepareStatement(
                     "UPDATE dtpunishment SET Mutepoints = Mutepoints - " + amount + " WHERE UUID=\"" + player + "\";")
                     .executeUpdate();
@@ -199,8 +186,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public void mute(UUID player, Instant expiration) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             conn.prepareStatement(
                     "UPDATE dtpunishment SET IsMuted = 1, Until = " + expiration + " WHERE UUID=\"" + player + "\";")
                     .executeUpdate();
@@ -212,8 +198,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public void unmute(UUID player) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             conn.prepareStatement("UPDATE dtpunishment SET IsMuted = 0, Until = null WHERE UUID=\"" + player + "\";")
                     .executeUpdate();
         } catch (SQLException e) {
@@ -223,8 +208,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public void createUser(UUID player) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             conn.prepareStatement("INSERT INTO dtpunishment (UUID,Banpoints,Mutepoints,IsMuted)\n" + "VALUES ('"
                     + player + "',0,0,false)").executeQuery();
         } catch (SQLException e) {
@@ -235,8 +219,7 @@ public class MySqlDataStore implements DataStore {
 
     @Override
     public boolean userExists(UUID player) {
-        try {
-            conn = getDataSource(getJdbcUrl()).getConnection();
+        try (Connection conn = getDataSource(getJdbcUrl()).getConnection()) {
             ResultSet set = conn.prepareStatement("SELECT UUID FROM dtpunishment WHERE UUID=\"" + player + "\";")
                     .executeQuery();
             return set.next();
@@ -244,14 +227,5 @@ public class MySqlDataStore implements DataStore {
             e.printStackTrace();
         }
         return false;
-    }
-
-    @Override
-    public void finish() {
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 }

@@ -23,6 +23,9 @@ spongestart{
 
 dependencies {
     compile 'org.spongepowered:spongeapi:5.2.0-SNAPSHOT'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.powermock:powermock-module-junit4:1.6.6'
+    testCompile 'org.powermock:powermock-api-mockito:1.6.6'
 }
 
 sponge.plugin.id = pluginId

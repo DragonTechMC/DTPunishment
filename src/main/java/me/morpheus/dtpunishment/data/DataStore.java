@@ -35,6 +35,4 @@ public interface DataStore {
     public void createUser(UUID player);
 
     public boolean userExists(UUID player);
-
-    public void finish();
 }

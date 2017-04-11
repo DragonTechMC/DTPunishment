@@ -61,8 +61,6 @@ public class CommandMutepointsAdd implements CommandExecutor {
 
         mutePunish.check(uuid, total);
 
-        dataStore.finish();
-
         return CommandResult.success();
 
     }

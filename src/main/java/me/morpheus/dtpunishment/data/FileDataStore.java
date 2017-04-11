@@ -178,9 +178,4 @@ public class FileDataStore implements DataStore {
         Path playerData = configDir.resolve(String.format("data/%s.conf", player));
         return Files.exists(playerData);
     }
-
-    @Override
-    public void finish() {
-
-    }
 }

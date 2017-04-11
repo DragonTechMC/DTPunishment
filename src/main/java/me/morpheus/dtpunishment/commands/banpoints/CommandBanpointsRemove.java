@@ -37,7 +37,6 @@ public class CommandBanpointsRemove implements CommandExecutor {
         int total = actual - amount;
 
         dataStore.removeBanpoints(uuid, amount);
-        dataStore.finish();
 
         if (user.isOnline()) {
             user.getPlayer().get()

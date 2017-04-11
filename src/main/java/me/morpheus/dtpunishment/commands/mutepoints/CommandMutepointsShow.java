@@ -28,7 +28,6 @@ public class CommandMutepointsShow implements CommandExecutor {
 
         src.sendMessage(Util.getWatermark()
                 .append(Text.of(user.getName() + " has " + dataStore.getMutepoints(uuid) + " mutepoints")).build());
-        dataStore.finish();
 
         return CommandResult.success();
 

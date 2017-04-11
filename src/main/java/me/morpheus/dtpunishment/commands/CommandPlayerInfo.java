@@ -48,7 +48,6 @@ public class CommandPlayerInfo implements CommandExecutor {
 
         }
 
-        dataStore.finish();
         return CommandResult.success();
     }
 }

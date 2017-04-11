@@ -37,7 +37,6 @@ public class CommandMutepointsRemove implements CommandExecutor {
         int total = actual - amount;
 
         dataStore.removeMutepoints(uuid, amount);
-        dataStore.finish();
 
         if (user.isOnline()) {
             user.getPlayer().get()
