@@ -1,0 +1,6 @@
+language: java
+
+dist: trusty
+
+before_install:
+  - chmod +x gradlew

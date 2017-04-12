@@ -16,7 +16,7 @@ repositories {
     }
 }
 
-spongestart{
+spongestart {
     eula true
     spongeForgeVersion '1.10.2-2221-5.2.0-BETA-2223'
 }

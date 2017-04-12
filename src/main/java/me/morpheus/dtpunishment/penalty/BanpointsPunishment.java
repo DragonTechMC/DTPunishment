@@ -25,62 +25,59 @@ import me.morpheus.dtpunishment.utils.Util;
 @Singleton
 public class BanpointsPunishment {
 
-    private MainConfig mainConfig;
+	private MainConfig mainConfig;
 
-    private Logger logger;
+	private Logger logger;
 
-    private Server server;
+	@Inject
+	public BanpointsPunishment(MainConfig mainConfig, Logger logger, Server server) {
+		this.mainConfig = mainConfig;
+		this.logger = logger;
+	}
 
-    @Inject
-    public BanpointsPunishment(MainConfig mainConfig, Logger logger, Server server) {
-        this.mainConfig = mainConfig;
-        this.logger = logger;
-        this.server = server;
-    }
+	public void check(UUID uuid, int amount) {
 
-    public void check(UUID uuid, int amount) {
+		Punishment punishment = mainConfig.punishments.getApplicableBanpointsPunishment(amount);
 
-        Punishment punishment = mainConfig.punishments.getApplicableBanpointsPunishment(amount);
+		if (punishment == null) {
+			logger.info(String.format("No punishment exists for %d banpoints", amount));
+			return;
+		}
 
-        if (punishment == null) {
-            logger.info(String.format("No punishment exists for %d banpoints", amount));
-            return;
-        }
+		BanService service = Sponge.getServiceManager().provide(BanService.class).get();
 
-        BanService service = Sponge.getServiceManager().provide(BanService.class).get();
+		Instant expiration = Instant.now().plus(punishment.length.duration);
 
-        Instant expiration = Instant.now().plus(punishment.length.duration);
+		String durationText = Util.durationToString(punishment.length.duration);
 
-        String durationText = Util.durationToString(punishment.length.duration);
+		User user = Util.getUser(uuid).get();
 
-        User user = Util.getUser(uuid).get();
+		Ban ban = Ban.builder().type(BanTypes.PROFILE).profile(user.getProfile()).expirationDate(expiration)
+				.reason(Util.getWatermark()
+						.append(Text.of(TextColors.AQUA, TextStyles.BOLD,
+								String.format("You have been banned for %s because you exceeded %d points",
+										durationText, punishment.threshold)))
+						.build())
+				.build();
+		service.addBan(ban);
 
-        Ban ban = Ban.builder().type(BanTypes.PROFILE).profile(user.getProfile()).expirationDate(expiration)
-                .reason(Util.getWatermark()
-                        .append(Text.of(TextColors.AQUA, TextStyles.BOLD,
-                                String.format("You have been banned for %s because you exceeded %d points",
-                                        durationText, punishment.threshold)))
-                        .build())
-                .build();
-        service.addBan(ban);
+		for (Player pl : Sponge.getServer().getOnlinePlayers()) {
+			Text message = Util.getWatermark()
+					.append(Text.builder(String.format("%s has been banned for %s for exceeding %d banpoint(s)",
+							user.getName(), durationText, punishment.threshold)).color(TextColors.RED).build())
+					.build();
+			pl.sendMessage(message);
+		}
 
-        for (Player pl : Sponge.getServer().getOnlinePlayers()) {
-            Text message = Util.getWatermark()
-                    .append(Text.builder(String.format("%s has been banned for %s for exceeding %d banpoint(s)",
-                            user.getName(), durationText, punishment.threshold)).color(TextColors.RED).build())
-                    .build();
-            pl.sendMessage(message);
-        }
+		if (user.isOnline()) {
+			user.getPlayer().get()
+					.kick(Util.getWatermark()
+							.append(Text.of(TextColors.AQUA, TextStyles.BOLD,
+									String.format("You have been banned for %s because you exceeded %d points",
+											durationText, punishment.threshold)))
+							.build());
+		}
 
-        if (user.isOnline()) {
-            user.getPlayer().get()
-                    .kick(Util.getWatermark()
-                            .append(Text.of(TextColors.AQUA, TextStyles.BOLD,
-                                    String.format("You have been banned for %s because you exceeded %d points",
-                                            durationText, punishment.threshold)))
-                            .build());
-        }
-
-    }
+	}
 
 }
