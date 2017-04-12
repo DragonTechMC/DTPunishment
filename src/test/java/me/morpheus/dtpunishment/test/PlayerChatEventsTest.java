@@ -17,7 +17,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.text.Text;
 import junit.framework.TestCase;
-import me.morpheus.dtpunishment.ChatWatcher;
+import me.morpheus.dtpunishment.WordChecker;
 import me.morpheus.dtpunishment.configuration.ChatConfig;
 import me.morpheus.dtpunishment.data.DataStore;
 import me.morpheus.dtpunishment.listeners.PlayerListener;
@@ -28,7 +28,7 @@ public class PlayerChatEventsTest extends TestCase {
 
     private Logger mockLogger;
     private DataStore mockDataStore;
-    private ChatWatcher mockChatWatcher;
+    private WordChecker mockChatWatcher;
     private ChatConfig mockChatConfig;
     private MutepointsPunishment mockMutePunish;
     private Player mockPlayer;
@@ -65,7 +65,7 @@ public class PlayerChatEventsTest extends TestCase {
         when(mockChatEvent.getRawMessage()).thenReturn(text);
         when(mockChatEvent.getMessage()).thenReturn(text);
 
-        mockChatWatcher = mock(ChatWatcher.class);
+        mockChatWatcher = mock(WordChecker.class);
 
         mockChatConfig = spy(ChatConfig.class);
 
@@ -136,7 +136,7 @@ public class PlayerChatEventsTest extends TestCase {
         PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockChatWatcher, mockChatConfig,
                 mockMutePunish, mockServer);
 
-        when(mockChatWatcher.containUppercase(anyString())).thenReturn(true);
+        when(mockChatWatcher.containsUppercase(anyString())).thenReturn(true);
 
         subject.onPlayerChat(mockChatEvent, mockPlayer);
 
@@ -155,7 +155,7 @@ public class PlayerChatEventsTest extends TestCase {
         PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockChatWatcher, mockChatConfig,
                 mockMutePunish, mockServer);
 
-        when(mockChatWatcher.containBannedWords(anyString())).thenReturn(true);
+        when(mockChatWatcher.containsBannedWords(anyString())).thenReturn(true);
 
         subject.onPlayerChat(mockChatEvent, mockPlayer);
 
@@ -167,5 +167,15 @@ public class PlayerChatEventsTest extends TestCase {
         verify(mockLogger).info("[Message cancelled (banned words)] - " + text.toPlain());
         // Mutepoint punishment was checked
         verify(mockMutePunish).check(any(UUID.class), anyInt());
+    }
+
+    @Test
+    public void testOnPlayerIsGoodConsoleDoesntGetMutepointsMessage() {
+        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockChatWatcher, mockChatConfig,
+                mockMutePunish, mockServer);
+
+        subject.onPlayerChat(mockChatEvent, mockPlayer);
+
+        verifyZeroInteractions(mockLogger);
     }
 }

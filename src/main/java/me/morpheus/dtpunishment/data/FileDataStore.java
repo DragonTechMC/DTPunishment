@@ -72,6 +72,9 @@ public class FileDataStore implements DataStore {
     public LocalDate getBanpointsUpdatedAt(UUID player) {
         initPlayerConfig(player);
         String bUpdatedAt = node.getNode("points", "bUpdatedAt").getString();
+        if (bUpdatedAt == null)
+            return LocalDate.MIN;
+
         return LocalDate.parse(bUpdatedAt);
     }
 
@@ -85,6 +88,10 @@ public class FileDataStore implements DataStore {
     public LocalDate getMutepointsUpdatedAt(UUID player) {
         initPlayerConfig(player);
         String mUpdatedAt = node.getNode("points", "mUpdatedAt").getString();
+
+        if (mUpdatedAt == null)
+            return LocalDate.MIN;
+
         return LocalDate.parse(mUpdatedAt);
     }
 

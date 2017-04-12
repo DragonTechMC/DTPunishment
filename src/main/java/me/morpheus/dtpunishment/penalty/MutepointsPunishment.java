@@ -22,17 +22,22 @@ import me.morpheus.dtpunishment.utils.Util;
 @Singleton
 public class MutepointsPunishment {
 
-    @Inject
     private MainConfig mainConfig;
 
-    @Inject
     private DataStore dataStore;
 
-    @Inject
     private BanpointsPunishment banPunish;
 
-    @Inject
     private Logger logger;
+
+    @Inject
+    public MutepointsPunishment(MainConfig mainConfig, DataStore dataStore, BanpointsPunishment banPunish,
+            Logger logger) {
+        this.mainConfig = mainConfig;
+        this.dataStore = dataStore;
+        this.banPunish = banPunish;
+        this.logger = logger;
+    }
 
     public void check(UUID uuid, int amount) {
 
@@ -64,7 +69,5 @@ public class MutepointsPunishment {
                 pl.sendMessage(message);
             }
         }
-
     }
-
 }

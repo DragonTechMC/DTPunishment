@@ -13,7 +13,7 @@ import org.spongepowered.api.Server;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import junit.framework.TestCase;
-import me.morpheus.dtpunishment.ChatWatcher;
+import me.morpheus.dtpunishment.WordChecker;
 import me.morpheus.dtpunishment.configuration.ChatConfig;
 import me.morpheus.dtpunishment.data.DataStore;
 import me.morpheus.dtpunishment.listeners.PlayerListener;
@@ -24,7 +24,7 @@ public class PlayerJoinEventsTest extends TestCase {
 
     private Logger mockLogger;
     private DataStore mockDataStore;
-    private ChatWatcher mockChatWatcher;
+    private WordChecker mockWordChecker;
     private ChatConfig mockChatConfig;
     private MutepointsPunishment mockMutePunish;
     private Player mockPlayer;
@@ -54,6 +54,8 @@ public class PlayerJoinEventsTest extends TestCase {
         when(mockJoinEvent.getTargetEntity()).thenReturn(mockPlayer);
 
         mockServer = mock(Server.class);
+
+        mockWordChecker = mock(WordChecker.class);
     }
 
     @Test
@@ -62,7 +64,7 @@ public class PlayerJoinEventsTest extends TestCase {
         when(mockDataStore.userExists(any(UUID.class))).thenReturn(false);
 
         // Create the listener
-        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockChatWatcher, mockChatConfig,
+        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
                 mockMutePunish, mockServer);
 
         // Check if they joined they got created
@@ -77,7 +79,7 @@ public class PlayerJoinEventsTest extends TestCase {
         when(mockDataStore.userExists(any(UUID.class))).thenReturn(true);
 
         // Create the listener
-        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockChatWatcher, mockChatConfig,
+        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
                 mockMutePunish, mockServer);
 
         // player has more than 5 mutepoints, 5 should be removed
@@ -93,7 +95,7 @@ public class PlayerJoinEventsTest extends TestCase {
         when(mockDataStore.userExists(any(UUID.class))).thenReturn(true);
 
         // Create the listener
-        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockChatWatcher, mockChatConfig,
+        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
                 mockMutePunish, mockServer);
 
         // player has less than 5 mutepoints, that amount should be removed
@@ -109,7 +111,7 @@ public class PlayerJoinEventsTest extends TestCase {
         when(mockDataStore.userExists(any(UUID.class))).thenReturn(true);
 
         // Create the listener
-        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockChatWatcher, mockChatConfig,
+        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
                 mockMutePunish, mockServer);
 
         // player has more than 5 mutepoints, that amount should be removed

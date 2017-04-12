@@ -14,26 +14,30 @@ import com.google.inject.Inject;
 
 import me.morpheus.dtpunishment.configuration.ChatConfig;
 
-public class ChatWatcher {
+public class WordChecker {
+
+    private ChatConfig chatConfig;
 
     @Inject
-    private ChatConfig chatConfig;
+    public WordChecker(ChatConfig chatConfig) {
+        this.chatConfig = chatConfig;
+    }
 
     private static Map<UUID, List<String>> map = new HashMap<>();
     private static Instant previous;
 
-    public boolean containBannedWords(String message) {
+    public boolean containsBannedWords(String message) {
+        message = message.toLowerCase();
 
         List<String> list = chatConfig.banned.words;
-
         for (String s : list) {
-            if (message.replaceAll("(?ix)[\\W]", "").contains(s))
+            if (message.replaceAll("(?ix)[\\W]", "").contains(s.toLowerCase()))
                 return true;
         }
         return false;
     }
 
-    public boolean containUppercase(String message) {
+    public boolean containsUppercase(String message) {
 
         if (message.replaceAll("[\\W]", "").length() <= chatConfig.caps.minimum_length)
             return false;

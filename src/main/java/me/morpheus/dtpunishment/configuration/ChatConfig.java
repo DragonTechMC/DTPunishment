@@ -1,8 +1,7 @@
 package me.morpheus.dtpunishment.configuration;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Singleton;
 
@@ -15,13 +14,13 @@ public class ChatConfig {
 
     public static final TypeToken<ChatConfig> TYPE = TypeToken.of(ChatConfig.class);
 
-    @Setting
+    @Setting(comment = "settings governing banned words and their punishments")
     public Banned banned;
 
-    @Setting
+    @Setting(comment = "settings governing SHOUTING IN CAPS and its punishments")
     public Caps caps;
 
-    @Setting
+    @Setting(comment = "settings governing spamming spamming spamming and its punishments")
     public Spam spam;
 
     public ChatConfig() {
@@ -32,34 +31,34 @@ public class ChatConfig {
 
     @ConfigSerializable
     public static class Banned {
-        @Setting
+        @Setting(comment = "number of mutepoints a user receives for saying a banned word")
         public int mutepoints = 4;
 
-        @Setting
-        public List<String> words = Collections.emptyList();
+        @Setting(comment = "list of words that are banned on the server - e.g. ['naughty', 'words', 'go', 'here']")
+        public List<String> words = new ArrayList<String>();
     }
 
     @ConfigSerializable
     public static class Caps {
-        @Setting
+        @Setting(comment = "number of mutepoints a user receives for using too many caps")
         public int mutepoints = 4;
 
-        @Setting
+        @Setting(comment = "the minimum length of a message to qualify for too many caps")
         public int minimum_length = 3;
 
-        @Setting
+        @Setting(comment = "the percentage of caps required in the message to trigger a punishment")
         public int percentage = 50;
     }
 
     @ConfigSerializable
     public static class Spam {
-        @Setting
+        @Setting(comment = "the maximum number of identical messages a user can say in the spam period")
         public int max_messages = 3;
 
-        @Setting
+        @Setting(comment = "how many seconds to watch for spam over")
         public int seconds = 10;
 
-        @Setting
+        @Setting(comment = "number of mutepoints a user receives each time they spam")
         public int mutepoints = 1;
     }
 }

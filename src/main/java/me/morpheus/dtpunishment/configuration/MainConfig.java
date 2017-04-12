@@ -17,7 +17,7 @@ public class MainConfig {
     @Setting
     public Database database;
 
-    @Setting
+    @Setting(comment = "these settings describe which punishments users incur when reaching a certain level of banpoints/mutepoints")
     public Punishments punishments;
 
     public MainConfig() {
@@ -28,7 +28,7 @@ public class MainConfig {
     @ConfigSerializable
     public static class Database {
 
-        @Setting
+        @Setting(comment = "Use MySQL database store instead of config file based storage")
         public Boolean enabled = false;
 
         @Setting
@@ -115,10 +115,10 @@ public class MainConfig {
             mutepoints.add(createPunishment(130, "60m", 100));
         }
 
-        @Setting
+        @Setting(comment = "bans players when certain amounts of banpoints are incurred/added")
         public List<Punishment> banpoints;
 
-        @Setting
+        @Setting(comment = "mutes players when certain amounts of mutepoints are incurred/added")
         public List<Punishment> mutepoints;
     }
 }

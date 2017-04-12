@@ -29,13 +29,10 @@ public class BanpointsPunishment {
 
     private Logger logger;
 
-    private Server server;
-
     @Inject
     public BanpointsPunishment(MainConfig mainConfig, Logger logger, Server server) {
         this.mainConfig = mainConfig;
         this.logger = logger;
-        this.server = server;
         logger.info("Got server object: " + server);
     }
 

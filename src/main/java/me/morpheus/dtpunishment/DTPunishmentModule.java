@@ -2,10 +2,7 @@ package me.morpheus.dtpunishment;
 
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.asset.AssetManager;
 import org.spongepowered.api.command.CommandManager;
-import org.spongepowered.api.event.EventManager;
-
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
