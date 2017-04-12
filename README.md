@@ -1,5 +1,7 @@
 # DTPunishment
 
+[![Build Status](https://travis-ci.org/DragonTechMC/DTPunishment.svg?branch=master)](https://travis-ci.org/DragonTechMC/DTPunishment)
+
 A unique punishment plugin made for DragonTechMC
 
 **Do not use without permission**
