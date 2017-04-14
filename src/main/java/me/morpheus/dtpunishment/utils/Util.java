@@ -16,53 +16,53 @@ import org.spongepowered.api.text.format.TextColors;
 
 public class Util {
 
-    public static Optional<User> getUser(UUID uuid) {
-        Optional<UserStorageService> userStorage = Sponge.getServiceManager().provide(UserStorageService.class);
-        return userStorage.get().get(uuid);
-    }
+	public static Optional<User> getUser(UUID uuid) {
+		Optional<UserStorageService> userStorage = Sponge.getServiceManager().provide(UserStorageService.class);
+		return userStorage.get().get(uuid);
+	}
 
-    public static Text.Builder getWatermark() {
-        return Text.builder("[DTP] ").color(TextColors.GOLD);
-    }
+	public static Text withWatermark(Object... text) {
+		return Text.builder("[DTP] ").color(TextColors.GOLD).append(Text.of(text)).build();
+	}
 
-    public static String durationToString(Duration duration) {
+	public static String durationToString(Duration duration) {
 
-        // Get days
-        long days = duration.toDays();
-        if (days > 0)
-            duration = duration.minusDays(days);
+		// Get days
+		long days = duration.toDays();
+		if (days > 0)
+			duration = duration.minusDays(days);
 
-        long hours = duration.toHours();
-        if (hours > 0)
-            duration = duration.minusHours(hours);
+		long hours = duration.toHours();
+		if (hours > 0)
+			duration = duration.minusHours(hours);
 
-        long minutes = duration.toMinutes();
-        if (minutes > 0)
-            duration = duration.minusMinutes(minutes);
+		long minutes = duration.toMinutes();
+		if (minutes > 0)
+			duration = duration.minusMinutes(minutes);
 
-        long seconds = duration.toMillis() * 1000;
+		long seconds = duration.toMillis() * 1000;
 
-        String result = "";
+		String result = "";
 
-        if (days > 0)
-            result += days + " days";
+		if (days > 0)
+			result += days + " days";
 
-        if (hours > 0)
-            result += (result.length() > 0 ? ", " : "") + hours + " hours";
+		if (hours > 0)
+			result += (result.length() > 0 ? ", " : "") + hours + " hours";
 
-        if (minutes > 0)
-            result += (result.length() > 0 ? ", " : "") + minutes + " minutes";
+		if (minutes > 0)
+			result += (result.length() > 0 ? ", " : "") + minutes + " minutes";
 
-        if (seconds > 0)
-            result += (result.length() > 0 ? ", " : "") + seconds + " seconds";
+		if (seconds > 0)
+			result += (result.length() > 0 ? ", " : "") + seconds + " seconds";
 
-        return result;
-    }
+		return result;
+	}
 
-    public static String instantToString(Instant instant) {
-        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
-        cal.setTimeInMillis(instant.toEpochMilli());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-        return dateFormat.format(cal.getTime());
-    }
+	public static String instantToString(Instant instant) {
+		Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+		cal.setTimeInMillis(instant.toEpochMilli());
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+		return dateFormat.format(cal.getTime());
+	}
 }

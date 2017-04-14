@@ -25,6 +25,14 @@ public class WordCheckerTests extends TestCase {
 	}
 
 	@Test
+	public void testEmptyWordListDoesntMatchAnything() {
+		WordChecker subject = new WordChecker(new ChatConfig());
+
+		// We match bad words
+		assertEquals(false, subject.containsBannedWords("some innocent sentence"));
+	}
+
+	@Test
 	public void testBannedWordsRespectCase() {
 		WordChecker subject = new WordChecker(chatConfig);
 

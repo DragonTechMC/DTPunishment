@@ -2,7 +2,7 @@ package me.morpheus.dtpunishment.commands.mutepoints;
 
 import java.util.UUID;
 
-import org.spongepowered.api.Sponge;
+import org.spongepowered.api.Server;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -22,46 +22,50 @@ import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandMutepointsAdd implements CommandExecutor {
 
-    @Inject
-    private DataStore dataStore;
+	private DataStore dataStore;
 
-    @Inject
-    private MutepointsPunishment mutePunish;
+	private MutepointsPunishment mutePunish;
 
-    @Override
-    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        User user = args.<User>getOne("player").get();
-        UUID uuid = user.getUniqueId();
-        String name = user.getName();
-        int amount = args.<Integer>getOne("amount").get();
+	private Server server;
 
-        dataStore.addMutepoints(uuid, amount);
+	@Inject
+	public CommandMutepointsAdd(DataStore dataStore, MutepointsPunishment mutePunish, Server server) {
+		this.dataStore = dataStore;
+		this.mutePunish = mutePunish;
+		this.server = server;
+	}
 
-        int total = dataStore.getMutepoints(uuid);
+	@Override
+	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+		User user = args.<User>getOne("player").get();
+		UUID uuid = user.getUniqueId();
+		String name = user.getName();
+		int amount = args.<Integer>getOne("amount").get();
 
-        if (user.isOnline()) {
-            user.getPlayer().get()
-                    .sendMessage(Util.getWatermark().append(
-                            Text.of(TextColors.RED, amount + " mutepoints have been added; you now have " + total))
-                            .build());
-        }
+		dataStore.addMutepoints(uuid, amount);
 
-        Text adminMessage = Util.getWatermark().append(Text.of(TextColors.RED, String
-                .format("%s has added %d mutepoint(s) to %s; they now have %d", src.getName(), amount, name, total)))
-                .build();
+		int total = dataStore.getMutepoints(uuid);
 
-        if (src instanceof ConsoleSource)
-            src.sendMessage(adminMessage);
+		if (user.isOnline()) {
+			user.getPlayer().get().sendMessage(Util.withWatermark(TextColors.RED,
+					String.format("%d mutepoints have been added; you now have %d", amount, total)));
+		}
 
-        for (Player p : Sponge.getServer().getOnlinePlayers()) {
-            if (p.hasPermission("dtpunishment.staff.notify") || p == src) {
-                p.sendMessage(adminMessage);
-            }
-        }
+		Text adminMessage = Util.withWatermark(TextColors.RED, String
+				.format("%s has added %d mutepoint(s) to %s; they now have %d", src.getName(), amount, name, total));
 
-        mutePunish.check(uuid, total);
+		if (src instanceof ConsoleSource)
+			src.sendMessage(adminMessage);
 
-        return CommandResult.success();
+		for (Player p : server.getOnlinePlayers()) {
+			if (p.hasPermission("dtpunishment.staff.notify") || p == src) {
+				p.sendMessage(adminMessage);
+			}
+		}
 
-    }
+		mutePunish.check(uuid, total);
+
+		return CommandResult.success();
+
+	}
 }

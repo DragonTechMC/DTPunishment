@@ -2,7 +2,7 @@ package me.morpheus.dtpunishment.commands.mutepoints;
 
 import java.util.Optional;
 
-import org.spongepowered.api.Sponge;
+import org.spongepowered.api.Server;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -21,37 +21,43 @@ import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandUnmute implements CommandExecutor {
 
-    @Inject
-    private DataStore dataStore;
+	private DataStore dataStore;
 
-    @Override
-    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+	private Server server;
 
-        User user = args.<User>getOne("player").get();
+	@Inject
+	public CommandUnmute(DataStore dataStore, Server server) {
+		this.dataStore = dataStore;
+		this.server = server;
+	}
 
-        dataStore.unmute(user.getUniqueId());
+	@Override
+	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 
-        // If player is online, notify them
-        Optional<Player> player = user.getPlayer();
+		User user = args.<User>getOne("player").get();
 
-        Text notification = Util.getWatermark().append(
-                Text.of(TextColors.AQUA, String.format("%s has been unmuted by %s", user.getName(), src.getName())))
-                .build();
+		dataStore.unmute(user.getUniqueId());
 
-        if (src instanceof ConsoleSource)
-            src.sendMessage(notification);
+		// If player is online, notify them
+		Optional<Player> player = user.getPlayer();
 
-        if (player.isPresent()) {
-            player.get().sendMessage(notification);
-        }
+		Text notification = Util.withWatermark(TextColors.AQUA,
+				String.format("%s has been unmuted by %s", user.getName(), src.getName()));
 
-        for (Player p : Sponge.getServer().getOnlinePlayers()) {
-            if (p.hasPermission("dtpunishment.staff.notify") || p.getPlayer().get() == src) {
-                p.sendMessage(notification);
-            }
-        }
+		if (src instanceof ConsoleSource)
+			src.sendMessage(notification);
 
-        return CommandResult.success();
-    }
+		if (player.isPresent()) {
+			player.get().sendMessage(notification);
+		}
+
+		for (Player p : server.getOnlinePlayers()) {
+			if (p.hasPermission("dtpunishment.staff.notify") || p.getPlayer().get() == src) {
+				p.sendMessage(notification);
+			}
+		}
+
+		return CommandResult.success();
+	}
 
 }

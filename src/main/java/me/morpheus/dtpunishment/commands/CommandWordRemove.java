@@ -24,7 +24,7 @@ import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
-public class CommandWordAdd implements CommandExecutor {
+public class CommandWordRemove implements CommandExecutor {
 
 	private ChatConfig chatConfig;
 
@@ -33,7 +33,7 @@ public class CommandWordAdd implements CommandExecutor {
 	private WordChecker wordChecker;
 
 	@Inject
-	public CommandWordAdd(ChatConfig chatConfig, @ConfigDir(sharedRoot = false) Path configDir,
+	public CommandWordRemove(ChatConfig chatConfig, @ConfigDir(sharedRoot = false) Path configDir,
 			WordChecker wordChecker) {
 		this.chatConfig = chatConfig;
 		this.configDir = configDir;
@@ -47,18 +47,17 @@ public class CommandWordAdd implements CommandExecutor {
 		List<String> actual = chatConfig.banned.words;
 
 		if (words.size() == 0) {
-			src.sendMessage(Util.withWatermark(TextColors.AQUA, "Please specify one or more words to add"));
+			src.sendMessage(Util.withWatermark(TextColors.AQUA, "Please specify one or more words to remove"));
 			return CommandResult.empty();
 		}
 
 		for (String word : words) {
-			if (actual.contains(word)) {
+			if (!actual.contains(word)) {
 				src.sendMessage(Util.withWatermark(TextColors.AQUA, "The word ", TextColors.RED, word, TextColors.AQUA,
-						" is already in the banned word list"));
-				continue;
+						" is not in the banned word list"));
 			}
 
-			actual.add(word.toLowerCase());
+			actual.remove(word.toLowerCase());
 		}
 
 		// TODO: start - this should all be done via configuration manager
@@ -81,8 +80,8 @@ public class CommandWordAdd implements CommandExecutor {
 		}
 		// TODO: end
 
-		src.sendMessage(Util.withWatermark(TextColors.AQUA, "You added the word(s) ", TextColors.RED,
-				String.join(", ", words), TextColors.AQUA, " to the banned words list"));
+		src.sendMessage(Util.withWatermark(TextColors.AQUA, "You removed the word(s) ", TextColors.RED,
+				String.join(", ", words), TextColors.AQUA, " from the banned word list"));
 
 		// Rebuild the word list
 		wordChecker.buildWordList();

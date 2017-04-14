@@ -8,8 +8,6 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.text.Text;
-
 import com.google.inject.Inject;
 
 import me.morpheus.dtpunishment.data.DataStore;
@@ -17,19 +15,22 @@ import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandMutepointsShow implements CommandExecutor {
 
-    @Inject
-    private DataStore dataStore;
+	private DataStore dataStore;
 
-    @Override
-    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        User user = args.<User>getOne("player").get();
+	@Inject
+	public CommandMutepointsShow(DataStore dataStore) {
+		this.dataStore = dataStore;
+	}
 
-        UUID uuid = user.getUniqueId();
+	@Override
+	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+		User user = args.<User>getOne("player").get();
 
-        src.sendMessage(Util.getWatermark()
-                .append(Text.of(user.getName() + " has " + dataStore.getMutepoints(uuid) + " mutepoints")).build());
+		UUID uuid = user.getUniqueId();
 
-        return CommandResult.success();
+		src.sendMessage(Util.withWatermark("%s has %d mutepoints", user.getName(), dataStore.getMutepoints(uuid)));
 
-    }
+		return CommandResult.success();
+
+	}
 }

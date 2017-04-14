@@ -29,10 +29,13 @@ public class BanpointsPunishment {
 
 	private Logger logger;
 
+	private Server server;
+
 	@Inject
 	public BanpointsPunishment(MainConfig mainConfig, Logger logger, Server server) {
 		this.mainConfig = mainConfig;
 		this.logger = logger;
+		this.server = server;
 	}
 
 	public void check(UUID uuid, int amount) {
@@ -53,29 +56,22 @@ public class BanpointsPunishment {
 		User user = Util.getUser(uuid).get();
 
 		Ban ban = Ban.builder().type(BanTypes.PROFILE).profile(user.getProfile()).expirationDate(expiration)
-				.reason(Util.getWatermark()
-						.append(Text.of(TextColors.AQUA, TextStyles.BOLD,
-								String.format("You have been banned for %s because you exceeded %d points",
-										durationText, punishment.threshold)))
-						.build())
+				.reason(Util.withWatermark(TextColors.AQUA, TextStyles.BOLD,
+						String.format("You have been banned for %s because you exceeded %d points", durationText,
+								punishment.threshold)))
 				.build();
 		service.addBan(ban);
 
-		for (Player pl : Sponge.getServer().getOnlinePlayers()) {
-			Text message = Util.getWatermark()
-					.append(Text.builder(String.format("%s has been banned for %s for exceeding %d banpoint(s)",
-							user.getName(), durationText, punishment.threshold)).color(TextColors.RED).build())
-					.build();
+		for (Player pl : server.getOnlinePlayers()) {
+			Text message = Util.withWatermark(TextColors.RED,
+					String.format("%s has been banned for %s for exceeding %d banpoint(s)", user.getName(),
+							durationText, punishment.threshold));
 			pl.sendMessage(message);
 		}
 
 		if (user.isOnline()) {
-			user.getPlayer().get()
-					.kick(Util.getWatermark()
-							.append(Text.of(TextColors.AQUA, TextStyles.BOLD,
-									String.format("You have been banned for %s because you exceeded %d points",
-											durationText, punishment.threshold)))
-							.build());
+			user.getPlayer().get().kick(Util.withWatermark(TextColors.AQUA, TextStyles.BOLD, String.format(
+					"You have been banned for %s because you exceeded %d points", durationText, punishment.threshold)));
 		}
 
 	}

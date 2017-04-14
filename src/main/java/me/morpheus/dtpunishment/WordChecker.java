@@ -26,8 +26,6 @@ public class WordChecker {
 
 	private Instant previous;
 
-	private Map<UUID, String> lastBadSentence = new HashMap<UUID, String>();
-
 	private Pattern bannedWordsRegexPattern;
 
 	@Inject
@@ -42,32 +40,39 @@ public class WordChecker {
 		// messages - should be run each time a word is added or
 		// the config is refreshed
 
-		StringBuilder sb = new StringBuilder();
-		sb.append("(");
+		if (chatConfig.banned.words.size() > 0) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(");
 
-		for (String s : chatConfig.banned.words) {
+			for (String s : chatConfig.banned.words) {
 
-			if (sb.length() > 1)
-				sb.append("|");
+				if (sb.length() > 1)
+					sb.append("|");
 
-			// Is partial?
-			if (s.startsWith("*")) {
-				sb.append(s.substring(1));
-			} else {
-				sb.append("\\b" + s + "\\b");
+				// Is partial?
+				if (s.startsWith("*")) {
+					sb.append(s.substring(1));
+				} else {
+					sb.append("\\b" + s + "\\b");
+				}
 			}
+
+			sb.append(")");
+
+			bannedWordsRegexPattern = Pattern.compile(sb.toString(), Pattern.CASE_INSENSITIVE);
+		} else {
+			bannedWordsRegexPattern = null;
 		}
-
-		sb.append(")");
-
-		bannedWordsRegexPattern = Pattern.compile(sb.toString(), Pattern.CASE_INSENSITIVE);
 	}
 
 	public boolean containsBannedWords(String message) {
-		return bannedWordsRegexPattern.matcher(message).find();
+		return bannedWordsRegexPattern != null && bannedWordsRegexPattern.matcher(message).find();
 	}
 
 	public String getBannedWord(String message) {
+		if (bannedWordsRegexPattern == null)
+			return null;
+
 		Matcher matcher = bannedWordsRegexPattern.matcher(message);
 		if (matcher.find()) {
 			return matcher.group(1);

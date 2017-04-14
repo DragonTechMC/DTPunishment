@@ -11,10 +11,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import junit.framework.TestCase;
 import me.morpheus.dtpunishment.WordChecker;
 import me.morpheus.dtpunishment.configuration.ChatConfig;
+import me.morpheus.dtpunishment.data.ChatOffenceData;
 import me.morpheus.dtpunishment.data.DataStore;
 import me.morpheus.dtpunishment.listeners.PlayerListener;
 import me.morpheus.dtpunishment.penalty.MutepointsPunishment;
@@ -22,103 +24,154 @@ import me.morpheus.dtpunishment.penalty.MutepointsPunishment;
 @RunWith(PowerMockRunner.class)
 public class PlayerJoinEventsTest extends TestCase {
 
-    private Logger mockLogger;
-    private DataStore mockDataStore;
-    private WordChecker mockWordChecker;
-    private ChatConfig mockChatConfig;
-    private MutepointsPunishment mockMutePunish;
-    private Player mockPlayer;
-    private ClientConnectionEvent.Join mockJoinEvent;
-    private Server mockServer;
+	private Logger mockLogger;
+	private DataStore mockDataStore;
+	private WordChecker mockWordChecker;
+	private ChatConfig mockChatConfig;
+	private MutepointsPunishment mockMutePunish;
+	private Player mockPlayer;
+	private ClientConnectionEvent.Join mockJoinEvent;
+	private Server mockServer;
+	private ChatOffenceData mockChatOffenceData;
 
-    public void setUp() throws Exception {
+	public void setUp() throws Exception {
 
-        // Mock the logger
-        mockLogger = mock(Logger.class);
+		// Mock the logger
+		mockLogger = mock(Logger.class);
 
-        // Mock the data store
-        mockDataStore = mock(DataStore.class);
-        // All points were 6 months in the past
-        when(mockDataStore.getBanpointsUpdatedAt(any(UUID.class))).thenReturn(LocalDate.now().minusMonths(6));
-        when(mockDataStore.getMutepointsUpdatedAt(any(UUID.class))).thenReturn(LocalDate.now().minusMonths(6));
-        // Setup some base level values
-        when(mockDataStore.getBanpoints(any(UUID.class))).thenReturn(0);
-        when(mockDataStore.getMutepoints(any(UUID.class))).thenReturn(0);
+		// Mock the data store
+		mockDataStore = mock(DataStore.class);
+		// All points were 6 months in the past
+		when(mockDataStore.getBanpointsUpdatedAt(any(UUID.class))).thenReturn(LocalDate.now().minusMonths(6));
+		when(mockDataStore.getMutepointsUpdatedAt(any(UUID.class))).thenReturn(LocalDate.now().minusMonths(6));
+		// Setup some base level values
+		when(mockDataStore.getBanpoints(any(UUID.class))).thenReturn(0);
+		when(mockDataStore.getMutepoints(any(UUID.class))).thenReturn(0);
 
-        mockPlayer = mock(Player.class);
-        when(mockPlayer.getName()).thenReturn("SomePlayer");
-        when(mockPlayer.getUniqueId()).thenReturn(UUID.randomUUID());
+		mockPlayer = mock(Player.class);
+		when(mockPlayer.getName()).thenReturn("SomePlayer");
+		when(mockPlayer.getUniqueId()).thenReturn(UUID.randomUUID());
 
-        // Make sure the connection event returns the mocked player
-        mockJoinEvent = mock(ClientConnectionEvent.Join.class);
-        when(mockJoinEvent.getTargetEntity()).thenReturn(mockPlayer);
+		// Make sure the connection event returns the mocked player
+		mockJoinEvent = mock(ClientConnectionEvent.Join.class);
+		when(mockJoinEvent.getTargetEntity()).thenReturn(mockPlayer);
 
-        mockServer = mock(Server.class);
+		mockChatOffenceData = mock(ChatOffenceData.class);
+		mockServer = mock(Server.class);
 
-        mockWordChecker = mock(WordChecker.class);
-    }
+		mockWordChecker = mock(WordChecker.class);
+	}
 
-    @Test
-    public void testOnPlayerJoinCreatesPlayerData() {
-        // Player doesn't exist
-        when(mockDataStore.userExists(any(UUID.class))).thenReturn(false);
+	@Test
+	public void testOnPlayerPreJoinKicksPlayersWithBadNames() {
+		// Player doesn't exist
+		User mockUser = mock(User.class);
+		when(mockUser.getName()).thenReturn("Youtwatface");
 
-        // Create the listener
-        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
-                mockMutePunish, mockServer);
+		ClientConnectionEvent.Login mockPreJoinEvent = mock(ClientConnectionEvent.Login.class);
+		when(mockPreJoinEvent.getTargetUser()).thenReturn(mockUser);
 
-        // Check if they joined they got created
-        subject.onPlayerJoin(mockJoinEvent);
+		ChatConfig config = new ChatConfig();
+		config.banned.words.add("*twat");
 
-        verify(mockDataStore).createUser(any(UUID.class));
-    }
+		WordChecker wordChecker = new WordChecker(config);
 
-    @Test
-    public void testOnExistingPlayerJoinRemovesFiveMutepoints() {
-        // Player exists
-        when(mockDataStore.userExists(any(UUID.class))).thenReturn(true);
+		// Create the listener
+		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, wordChecker, config, mockMutePunish,
+				mockServer, mockChatOffenceData);
 
-        // Create the listener
-        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
-                mockMutePunish, mockServer);
+		// Check if they joined they got created
+		subject.onPlayerPreJoin(mockPreJoinEvent);
 
-        // player has more than 5 mutepoints, 5 should be removed
-        when(mockDataStore.getMutepoints(any(UUID.class))).thenReturn(10);
+		verify(mockPreJoinEvent).setMessage(any());
+		verify(mockPreJoinEvent).setCancelled(true);
+	}
 
-        subject.onPlayerJoin(mockJoinEvent);
-        verify(mockDataStore).removeMutepoints(mockPlayer.getUniqueId(), 5);
-    }
+	@Test
+	public void testOnPlayerPreJoinDoesntKickPlayersWithFullBadWordMatchesInGoodNames() {
+		// Player doesn't exist
+		User mockUser = mock(User.class);
+		when(mockUser.getName()).thenReturn("Pushit");
 
-    @Test
-    public void testOnExistingPlayerJoinRemovesRemainingMutepoints() {
-        // Player exists
-        when(mockDataStore.userExists(any(UUID.class))).thenReturn(true);
+		ClientConnectionEvent.Login mockPreJoinEvent = mock(ClientConnectionEvent.Login.class);
+		when(mockPreJoinEvent.getTargetUser()).thenReturn(mockUser);
 
-        // Create the listener
-        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
-                mockMutePunish, mockServer);
+		ChatConfig config = new ChatConfig();
+		config.banned.words.add("shit");
 
-        // player has less than 5 mutepoints, that amount should be removed
-        when(mockDataStore.getMutepoints(any(UUID.class))).thenReturn(4);
+		WordChecker wordChecker = new WordChecker(config);
 
-        subject.onPlayerJoin(mockJoinEvent);
-        verify(mockDataStore).removeMutepoints(mockPlayer.getUniqueId(), 4);
-    }
+		// Create the listener
+		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, wordChecker, config, mockMutePunish,
+				mockServer, mockChatOffenceData);
 
-    @Test
-    public void testOnExistingPlayerJoinRemovesOneBanpoint() {
-        // Player exists
-        when(mockDataStore.userExists(any(UUID.class))).thenReturn(true);
+		// Check if they joined they got created
+		subject.onPlayerPreJoin(mockPreJoinEvent);
 
-        // Create the listener
-        PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
-                mockMutePunish, mockServer);
+		verify(mockPreJoinEvent, never()).setCancelled(true);
+	}
 
-        // player has more than 5 mutepoints, that amount should be removed
-        when(mockDataStore.getBanpoints(any(UUID.class))).thenReturn(5);
+	@Test
+	public void testOnPlayerJoinCreatesPlayerData() {
+		// Player doesn't exist
+		when(mockDataStore.userExists(any(UUID.class))).thenReturn(false);
 
-        subject.onPlayerJoin(mockJoinEvent);
-        verify(mockDataStore).removeBanpoints(mockPlayer.getUniqueId(), 1);
-    }
+		// Create the listener
+		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
+				mockMutePunish, mockServer, mockChatOffenceData);
+
+		// Check if they joined they got created
+		subject.onPlayerJoin(mockJoinEvent);
+
+		verify(mockDataStore).createUser(any(UUID.class));
+	}
+
+	@Test
+	public void testOnExistingPlayerJoinRemovesFiveMutepoints() {
+		// Player exists
+		when(mockDataStore.userExists(any(UUID.class))).thenReturn(true);
+
+		// Create the listener
+		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
+				mockMutePunish, mockServer, mockChatOffenceData);
+
+		// player has more than 5 mutepoints, 5 should be removed
+		when(mockDataStore.getMutepoints(any(UUID.class))).thenReturn(10);
+
+		subject.onPlayerJoin(mockJoinEvent);
+		verify(mockDataStore).removeMutepoints(mockPlayer.getUniqueId(), 5);
+	}
+
+	@Test
+	public void testOnExistingPlayerJoinRemovesRemainingMutepoints() {
+		// Player exists
+		when(mockDataStore.userExists(any(UUID.class))).thenReturn(true);
+
+		// Create the listener
+		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
+				mockMutePunish, mockServer, mockChatOffenceData);
+
+		// player has less than 5 mutepoints, that amount should be removed
+		when(mockDataStore.getMutepoints(any(UUID.class))).thenReturn(4);
+
+		subject.onPlayerJoin(mockJoinEvent);
+		verify(mockDataStore).removeMutepoints(mockPlayer.getUniqueId(), 4);
+	}
+
+	@Test
+	public void testOnExistingPlayerJoinRemovesOneBanpoint() {
+		// Player exists
+		when(mockDataStore.userExists(any(UUID.class))).thenReturn(true);
+
+		// Create the listener
+		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
+				mockMutePunish, mockServer, mockChatOffenceData);
+
+		// player has more than 5 mutepoints, that amount should be removed
+		when(mockDataStore.getBanpoints(any(UUID.class))).thenReturn(5);
+
+		subject.onPlayerJoin(mockJoinEvent);
+		verify(mockDataStore).removeBanpoints(mockPlayer.getUniqueId(), 1);
+	}
 
 }

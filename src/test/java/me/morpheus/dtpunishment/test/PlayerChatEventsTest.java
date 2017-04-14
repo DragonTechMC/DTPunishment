@@ -18,6 +18,7 @@ import org.spongepowered.api.text.Text;
 import junit.framework.TestCase;
 import me.morpheus.dtpunishment.WordChecker;
 import me.morpheus.dtpunishment.configuration.ChatConfig;
+import me.morpheus.dtpunishment.data.ChatOffenceData;
 import me.morpheus.dtpunishment.data.DataStore;
 import me.morpheus.dtpunishment.listeners.PlayerListener;
 import me.morpheus.dtpunishment.penalty.MutepointsPunishment;
@@ -35,6 +36,7 @@ public class PlayerChatEventsTest extends TestCase {
 	private MessageChannelEvent.Chat mockChatEvent;
 	private Text text;
 	private Server mockServer;
+	private ChatOffenceData mockChatOffenceData;
 
 	public void setUp() throws Exception {
 
@@ -72,6 +74,7 @@ public class PlayerChatEventsTest extends TestCase {
 		onlinePlayers.add(mockPlayer);
 		onlinePlayers.add(mockOtherPlayer);
 
+		mockChatOffenceData = mock(ChatOffenceData.class);
 		mockMutePunish = mock(MutepointsPunishment.class);
 
 		// Mock the server
@@ -82,7 +85,7 @@ public class PlayerChatEventsTest extends TestCase {
 	@Test
 	public void testOnPlayerChatMutesMutedPlayerAndLogsToLogger() {
 		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
-				mockMutePunish, mockServer);
+				mockMutePunish, mockServer, mockChatOffenceData);
 
 		when(mockDataStore.isMuted(mockPlayer.getUniqueId())).thenReturn(true);
 		when(mockDataStore.getExpiration(mockPlayer.getUniqueId())).thenReturn(Instant.now().plusSeconds(3000));
@@ -100,7 +103,7 @@ public class PlayerChatEventsTest extends TestCase {
 	@Test
 	public void testOnPlayerChatUnmutesExpiredMute() {
 		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
-				mockMutePunish, mockServer);
+				mockMutePunish, mockServer, mockChatOffenceData);
 
 		when(mockDataStore.isMuted(mockPlayer.getUniqueId())).thenReturn(true);
 		when(mockDataStore.getExpiration(mockPlayer.getUniqueId())).thenReturn(Instant.now().minusSeconds(3000));
@@ -114,7 +117,7 @@ public class PlayerChatEventsTest extends TestCase {
 	@Test
 	public void testOnPlayerSpam() {
 		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
-				mockMutePunish, mockServer);
+				mockMutePunish, mockServer, mockChatOffenceData);
 
 		when(mockWordChecker.isSpam(anyString(), any(UUID.class))).thenReturn(true);
 
@@ -133,7 +136,7 @@ public class PlayerChatEventsTest extends TestCase {
 	@Test
 	public void testOnPlayerUppercase() {
 		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
-				mockMutePunish, mockServer);
+				mockMutePunish, mockServer, mockChatOffenceData);
 
 		when(mockWordChecker.containsUppercase(anyString())).thenReturn(true);
 
@@ -152,7 +155,7 @@ public class PlayerChatEventsTest extends TestCase {
 	@Test
 	public void testOnPlayerBannedWords() {
 		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
-				mockMutePunish, mockServer);
+				mockMutePunish, mockServer, mockChatOffenceData);
 
 		when(mockWordChecker.containsBannedWords(anyString())).thenReturn(true);
 
@@ -171,7 +174,7 @@ public class PlayerChatEventsTest extends TestCase {
 	@Test
 	public void testOnPlayerIsGoodConsoleDoesntGetMutepointsMessage() {
 		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
-				mockMutePunish, mockServer);
+				mockMutePunish, mockServer, mockChatOffenceData);
 
 		subject.onPlayerChat(mockChatEvent, mockPlayer);
 

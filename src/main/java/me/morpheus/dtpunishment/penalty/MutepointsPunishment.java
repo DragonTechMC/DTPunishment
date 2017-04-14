@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
-import org.spongepowered.api.Sponge;
+import org.spongepowered.api.Server;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
@@ -22,52 +22,53 @@ import me.morpheus.dtpunishment.utils.Util;
 @Singleton
 public class MutepointsPunishment {
 
-    private MainConfig mainConfig;
+	private MainConfig mainConfig;
 
-    private DataStore dataStore;
+	private DataStore dataStore;
 
-    private BanpointsPunishment banPunish;
+	private BanpointsPunishment banPunish;
 
-    private Logger logger;
+	private Logger logger;
 
-    @Inject
-    public MutepointsPunishment(MainConfig mainConfig, DataStore dataStore, BanpointsPunishment banPunish,
-            Logger logger) {
-        this.mainConfig = mainConfig;
-        this.dataStore = dataStore;
-        this.banPunish = banPunish;
-        this.logger = logger;
-    }
+	private Server server;
 
-    public void check(UUID uuid, int amount) {
+	@Inject
+	public MutepointsPunishment(MainConfig mainConfig, DataStore dataStore, BanpointsPunishment banPunish,
+			Logger logger, Server server) {
+		this.mainConfig = mainConfig;
+		this.dataStore = dataStore;
+		this.banPunish = banPunish;
+		this.logger = logger;
+		this.server = server;
+	}
 
-        Punishment punishment = mainConfig.punishments.getApplicableMutepointsPunishment(amount);
+	public void check(UUID uuid, int amount) {
 
-        if (punishment == null) {
-            logger.info(String.format("Could not find punishment for %d mutepoints", amount));
-            return;
-        }
+		Punishment punishment = mainConfig.punishments.getApplicableMutepointsPunishment(amount);
 
-        if (punishment.banpoints > 0) {
-            dataStore.addBanpoints(uuid, punishment.banpoints);
-            banPunish.check(uuid, dataStore.getBanpoints(uuid));
-        }
+		if (punishment == null) {
+			logger.info(String.format("Could not find punishment for %d mutepoints", amount));
+			return;
+		}
 
-        Instant expiration = Instant.now().plus(punishment.length.duration);
+		if (punishment.banpoints > 0) {
+			dataStore.addBanpoints(uuid, punishment.banpoints);
+			banPunish.check(uuid, dataStore.getBanpoints(uuid));
+		}
 
-        dataStore.mute(uuid, expiration);
+		Instant expiration = Instant.now().plus(punishment.length.duration);
 
-        Optional<User> userOpt = Util.getUser(uuid);
+		dataStore.mute(uuid, expiration);
 
-        if (userOpt.isPresent()) {
-            for (Player pl : Sponge.getServer().getOnlinePlayers()) {
-                Text message = Util.getWatermark()
-                        .append(Text.builder(String.format("%s has been muted for %s for exceeding %d mutepoint(s)",
-                                userOpt.get().getName(), Util.durationToString(punishment.length.duration),
-                                punishment.threshold)).color(TextColors.RED).build())
-                        .build();
-                pl.sendMessage(message);
-            }
-        }
-    }
+		Optional<User> userOpt = Util.getUser(uuid);
+
+		if (userOpt.isPresent()) {
+			for (Player pl : server.getOnlinePlayers()) {
+				Text message = Util.withWatermark(TextColors.RED,
+						String.format("%s has been muted for %s for exceeding %d mutepoint(s)", userOpt.get().getName(),
+								Util.durationToString(punishment.length.duration), punishment.threshold));
+				pl.sendMessage(message);
+			}
+		}
+	}
 }

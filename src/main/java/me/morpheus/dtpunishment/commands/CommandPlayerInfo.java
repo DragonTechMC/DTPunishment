@@ -10,8 +10,6 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.text.Text;
-
 import com.google.inject.Inject;
 
 import me.morpheus.dtpunishment.data.DataStore;
@@ -19,35 +17,39 @@ import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandPlayerInfo implements CommandExecutor {
 
-    @Inject
-    private DataStore dataStore;
+	private DataStore dataStore;
 
-    @Override
-    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Optional<User> player = args.getOne("player");
-        if (player.isPresent()) {
-            User user = player.get();
-            UUID uuid = user.getUniqueId();
+	@Inject
+	private CommandPlayerInfo(DataStore dataStore) {
+		this.dataStore = dataStore;
+	}
 
-            src.sendMessage(Util.getWatermark().append(Text.of("Player : " + user.getName())).build());
-            src.sendMessage(Util.getWatermark().append(Text.of("Mute : " + dataStore.getMutepoints(uuid))).build());
-            src.sendMessage(Util.getWatermark().append(Text.of("Ban : " + dataStore.getBanpoints(uuid))).build());
+	@Override
+	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+		Optional<User> player = args.getOne("player");
+		if (player.isPresent()) {
+			User user = player.get();
+			UUID uuid = user.getUniqueId();
 
-        } else {
+			src.sendMessage(Util.withWatermark("Player : " + user.getName()));
+			src.sendMessage(Util.withWatermark("Mute : " + dataStore.getMutepoints(uuid)));
+			src.sendMessage(Util.withWatermark("Ban : " + dataStore.getBanpoints(uuid)));
 
-            if (!(src instanceof Player)) {
-                src.sendMessage(Util.getWatermark().append(Text.of("You need to be a player to execute this")).build());
-                return CommandResult.empty();
-            }
+		} else {
 
-            UUID uuid = ((Player) src).getUniqueId();
+			if (!(src instanceof Player)) {
+				src.sendMessage(Util.withWatermark("You need to be a player to execute this"));
+				return CommandResult.empty();
+			}
 
-            src.sendMessage(Util.getWatermark().append(Text.of("Player : " + src.getName())).build());
-            src.sendMessage(Util.getWatermark().append(Text.of("Mute : " + dataStore.getMutepoints(uuid))).build());
-            src.sendMessage(Util.getWatermark().append(Text.of("Ban : " + dataStore.getBanpoints(uuid))).build());
+			UUID uuid = ((Player) src).getUniqueId();
 
-        }
+			src.sendMessage(Util.withWatermark("Player : " + src.getName()));
+			src.sendMessage(Util.withWatermark("Mute : " + dataStore.getMutepoints(uuid)));
+			src.sendMessage(Util.withWatermark("Ban : " + dataStore.getBanpoints(uuid)));
 
-        return CommandResult.success();
-    }
+		}
+
+		return CommandResult.success();
+	}
 }
