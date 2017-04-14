@@ -15,24 +15,56 @@ public class WordCheckerTests extends TestCase {
 
 	public void setUp() {
 		chatConfig = new ChatConfig();
-		chatConfig.banned.words.add("idiot");
-		chatConfig.banned.words.add("noob");
+		// Partial - cannot be in any word
+		chatConfig.banned.words.add("*twat");
+		// Non-partial - cannot stand alone
+		chatConfig.banned.words.add("shit");
 
 		chatConfig.caps.percentage = 50;
 		chatConfig.caps.minimum_length = 15;
 	}
 
 	@Test
-	public void testBannedWords() {
+	public void testBannedWordsRespectCase() {
 		WordChecker subject = new WordChecker(chatConfig);
 
 		// We match bad words
-		assertEquals(true, subject.containsBannedWords("iDIoT"));
-		assertEquals(true, subject.containsBannedWords("idiot"));
+		assertEquals(true, subject.containsBannedWords("shit"));
+		assertEquals(true, subject.containsBannedWords("ShIt"));
+	}
+
+	@Test
+	public void testNonBannedWords() {
+		WordChecker subject = new WordChecker(chatConfig);
 
 		// We don't match ok words
-		assertEquals(false, subject.containsBannedWords("nooob"));
-		assertEquals(false, subject.containsBannedWords("newb"));
+		assertEquals(false, subject.containsBannedWords("hello"));
+		assertEquals(false, subject.containsBannedWords("world"));
+	}
+
+	@Test
+	public void testOkSentencesDontTriggerBans() {
+		WordChecker subject = new WordChecker(chatConfig);
+
+		// We don't match ok words
+		assertEquals(false, subject.containsBannedWords("I just watch people"));
+		assertEquals(false, subject.containsBannedWords("Push it, push it real good"));
+	}
+
+	public void testPartialsTriggerBans() {
+		WordChecker subject = new WordChecker(chatConfig);
+
+		// We match partials
+		assertEquals(true, subject.containsBannedWords("I justwatch people"));
+		assertEquals(true, subject.containsBannedWords("You megatwat"));
+	}
+
+	public void testNonPartialsDontTriggerBans() {
+		WordChecker subject = new WordChecker(chatConfig);
+
+		// We don't match non partials inside words
+		assertEquals(false, subject.containsBannedWords("Pushit, pushit real good"));
+		assertEquals(false, subject.containsBannedWords("Oh dear, you missed, you could say it's a mishit"));
 	}
 
 	@Test
