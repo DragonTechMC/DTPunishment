@@ -28,7 +28,7 @@ public class CommandBanpointsShow implements CommandExecutor {
 
 		UUID uuid = user.getUniqueId();
 
-		src.sendMessage(Util.withWatermark("%s has %d banpoints", user.getName(), dataStore.getBanpoints(uuid)));
+		src.sendMessage(Util.withWatermark(user.getName(), " has ", dataStore.getBanpoints(uuid), " banpoints"));
 
 		return CommandResult.success();
 

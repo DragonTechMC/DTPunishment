@@ -17,12 +17,16 @@ public class CommandReloadConfig implements CommandExecutor {
 
 	private ConfigurationManager configurationManager;
 
+	private CommandManager commandManager;
+
 	private WordChecker wordChecker;
 
 	@Inject
-	public CommandReloadConfig(ConfigurationManager configurationManager, WordChecker wordChecker) {
+	public CommandReloadConfig(ConfigurationManager configurationManager, WordChecker wordChecker,
+			CommandManager commandManager) {
 		this.configurationManager = configurationManager;
 		this.wordChecker = wordChecker;
+		this.commandManager = commandManager;
 	}
 
 	@Override
@@ -31,6 +35,9 @@ public class CommandReloadConfig implements CommandExecutor {
 
 		// Rebuild the word list
 		wordChecker.buildWordList();
+
+		// re-register commands in case they changed
+		commandManager.registerCommands();
 
 		src.sendMessage(Util.withWatermark(TextColors.AQUA, "Configuration has been reloaded"));
 
