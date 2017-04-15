@@ -134,6 +134,25 @@ public class PlayerChatEventsTest extends TestCase {
 	}
 
 	@Test
+	public void testOnPlayerCharacterSpam() {
+		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
+				mockMutePunish, mockServer, mockChatOffenceData);
+
+		when(mockWordChecker.isCharacterSpam(anyString())).thenReturn(true);
+
+		subject.onPlayerChat(mockChatEvent, mockPlayer);
+
+		// The player got points
+		verify(mockDataStore).addMutepoints(any(UUID.class), anyInt());
+		// The message is cancelled
+		verify(mockChatEvent).setMessageCancelled(true);
+		// The message got logged
+		verify(mockLogger).info("[Message cancelled (character spam)] - " + text.toPlain());
+		// Mutepoint punishment was checked
+		verify(mockMutePunish).check(any(UUID.class), anyInt());
+	}
+
+	@Test
 	public void testOnPlayerUppercase() {
 		PlayerListener subject = new PlayerListener(mockLogger, mockDataStore, mockWordChecker, mockChatConfig,
 				mockMutePunish, mockServer, mockChatOffenceData);

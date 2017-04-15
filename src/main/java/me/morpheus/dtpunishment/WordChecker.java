@@ -28,15 +28,17 @@ public class WordChecker {
 
 	private Pattern bannedWordsRegexPattern;
 
+	private Pattern characterSpamRegexPattern;
+
 	@Inject
 	public WordChecker(ChatConfig chatConfig) {
 		this.chatConfig = chatConfig;
 
-		buildWordList();
+		updateFromConfiguration();
 	}
 
-	public void buildWordList() {
-		// Builds the regex that we will check against the incoming user
+	public void updateFromConfiguration() {
+		// Builds the regexes that we will check against the incoming user
 		// messages - should be run each time a word is added or
 		// the config is refreshed
 
@@ -62,6 +64,15 @@ public class WordChecker {
 			bannedWordsRegexPattern = Pattern.compile(sb.toString(), Pattern.CASE_INSENSITIVE);
 		} else {
 			bannedWordsRegexPattern = null;
+		}
+
+		if (chatConfig.characterspam.repeated_characters > 0) {
+			// Match the previous character X or more times - since we are
+			// matching a backref, it's not
+			// counted as a repeated character so we actually want to match 1
+			// less than the config specifies so subtract 1
+			characterSpamRegexPattern = Pattern
+					.compile(String.format("([^\\s])\\1{%d,}", chatConfig.characterspam.repeated_characters - 1));
 		}
 	}
 
@@ -112,7 +123,7 @@ public class WordChecker {
 	public boolean isSpam(String message, UUID author) {
 
 		Instant now = Instant.now();
-		message = StringUtils.lowerCase(message);
+		message = message.toLowerCase();
 
 		if (previous == null || now.isAfter(previous.plusSeconds(chatConfig.spam.seconds)))
 			map.clear();
@@ -131,6 +142,20 @@ public class WordChecker {
 		int count = Collections.frequency(map.get(author), message);
 
 		return count > chatConfig.spam.max_messages;
+	}
+
+	public boolean isCharacterSpam(String message) {
+		return characterSpamRegexPattern.matcher(message).find();
+	}
+
+	public String getCharacterSpam(String message) {
+		Matcher matcher = characterSpamRegexPattern.matcher(message);
+
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+
+		return null;
 	}
 
 }

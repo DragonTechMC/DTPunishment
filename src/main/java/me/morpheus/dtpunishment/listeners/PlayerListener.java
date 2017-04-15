@@ -139,6 +139,22 @@ public class PlayerListener {
 			event.setMessageCancelled(true);
 		}
 
+		if (wordChecker.isCharacterSpam(message)) {
+			int points = chatConfig.characterspam.mutepoints;
+			mutePointsIncurred += points;
+			dataStore.addMutepoints(uuid, points);
+
+			player.sendMessage(Util.withWatermark(TextColors.RED, "You are spamming characters in chat, ", points,
+					" mutepoint(s) have been added automatically, you now have ", dataStore.getMutepoints(uuid),
+					". If you believe this is an error, contact a staff member."));
+
+			logger.info("[Message cancelled (character spam)] - " + event.getMessage().toPlain());
+
+			chatOffenceData.trackLastOffence(player.getUniqueId(), message, "character spam", points);
+
+			event.setMessageCancelled(true);
+		}
+
 		if (wordChecker.containsBannedWords(message)) {
 			int points = chatConfig.banned.mutepoints;
 			mutePointsIncurred += points;

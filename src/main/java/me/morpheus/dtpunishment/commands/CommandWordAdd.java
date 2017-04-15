@@ -90,7 +90,7 @@ public class CommandWordAdd implements CommandExecutor {
 					String.join(", ", wordsAdded), TextColors.AQUA, " to the banned words list"));
 
 			// Rebuild the word list
-			wordChecker.buildWordList();
+			wordChecker.updateFromConfiguration();
 
 			return CommandResult.success();
 		}

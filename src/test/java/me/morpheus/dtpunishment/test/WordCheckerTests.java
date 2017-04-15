@@ -87,4 +87,12 @@ public class WordCheckerTests extends TestCase {
 		assertEquals(false, subject.containsUppercase("TOO SHORT!"));
 		assertEquals(true, subject.containsUppercase("LONGER THAN TOO SHORT!"));
 	}
+
+	@Test
+	public void testCharacterSpam() {
+		WordChecker subject = new WordChecker(chatConfig);
+
+		assertEquals(true, subject.isCharacterSpam("Noooooooooooooooo!"));
+		assertEquals(false, subject.isCharacterSpam("I once saw a huge cow go 'moo moo' over the moon"));
+	}
 }

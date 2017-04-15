@@ -34,7 +34,7 @@ public class CommandReloadConfig implements CommandExecutor {
 		configurationManager.loadConfiguration();
 
 		// Rebuild the word list
-		wordChecker.buildWordList();
+		wordChecker.updateFromConfiguration();
 
 		// re-register commands in case they changed
 		commandManager.registerCommands();
