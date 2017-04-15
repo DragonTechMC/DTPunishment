@@ -2,6 +2,7 @@ package me.morpheus.dtpunishment.commands;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.spongepowered.api.command.CommandException;
@@ -51,6 +52,8 @@ public class CommandWordAdd implements CommandExecutor {
 			return CommandResult.empty();
 		}
 
+		ArrayList<String> wordsAdded = new ArrayList<String>();
+
 		for (String word : words) {
 			if (actual.contains(word)) {
 				src.sendMessage(Util.withWatermark(TextColors.AQUA, "The word ", TextColors.RED, word, TextColors.AQUA,
@@ -58,6 +61,7 @@ public class CommandWordAdd implements CommandExecutor {
 				continue;
 			}
 
+			wordsAdded.add(word);
 			actual.add(word.toLowerCase());
 		}
 
@@ -81,13 +85,17 @@ public class CommandWordAdd implements CommandExecutor {
 		}
 		// TODO: end
 
-		src.sendMessage(Util.withWatermark(TextColors.AQUA, "You added the word(s) ", TextColors.RED,
-				String.join(", ", words), TextColors.AQUA, " to the banned words list"));
+		if (wordsAdded.size() > 0) {
+			src.sendMessage(Util.withWatermark(TextColors.AQUA, "You added the word(s) ", TextColors.RED,
+					String.join(", ", wordsAdded), TextColors.AQUA, " to the banned words list"));
 
-		// Rebuild the word list
-		wordChecker.buildWordList();
+			// Rebuild the word list
+			wordChecker.buildWordList();
 
-		return CommandResult.success();
+			return CommandResult.success();
+		}
+
+		return CommandResult.empty();
 
 	}
 

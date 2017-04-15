@@ -2,6 +2,7 @@ package me.morpheus.dtpunishment.commands;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.spongepowered.api.command.CommandException;
@@ -51,12 +52,16 @@ public class CommandWordRemove implements CommandExecutor {
 			return CommandResult.empty();
 		}
 
+		ArrayList<String> wordsRemoved = new ArrayList<String>();
+
 		for (String word : words) {
 			if (!actual.contains(word)) {
 				src.sendMessage(Util.withWatermark(TextColors.AQUA, "The word ", TextColors.RED, word, TextColors.AQUA,
 						" is not in the banned word list"));
+				continue;
 			}
 
+			wordsRemoved.add(word);
 			actual.remove(word.toLowerCase());
 		}
 
@@ -80,14 +85,17 @@ public class CommandWordRemove implements CommandExecutor {
 		}
 		// TODO: end
 
-		src.sendMessage(Util.withWatermark(TextColors.AQUA, "You removed the word(s) ", TextColors.RED,
-				String.join(", ", words), TextColors.AQUA, " from the banned word list"));
+		if (wordsRemoved.size() > 0) {
+			src.sendMessage(Util.withWatermark(TextColors.AQUA, "You removed the word(s) ", TextColors.RED,
+					String.join(", ", wordsRemoved), TextColors.AQUA, " from the banned word list"));
 
-		// Rebuild the word list
-		wordChecker.buildWordList();
+			// Rebuild the word list
+			wordChecker.buildWordList();
 
-		return CommandResult.success();
+			return CommandResult.success();
+		}
 
+		return CommandResult.empty();
 	}
 
 }
