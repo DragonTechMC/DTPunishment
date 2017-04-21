@@ -10,6 +10,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.format.TextStyles;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -44,6 +45,8 @@ public class MutepointsPunishment {
 
 	public void check(UUID uuid, int amount) {
 
+		User user = Util.getUser(uuid).get();
+
 		Punishment punishment = mainConfig.punishments.getApplicableMutepointsPunishment(amount);
 
 		if (punishment == null) {
@@ -60,15 +63,21 @@ public class MutepointsPunishment {
 
 		dataStore.mute(uuid, expiration);
 
-		Optional<User> userOpt = Util.getUser(uuid);
+		Text message = Util.withWatermark(TextColors.RED,
+				String.format("%s has been muted for %s for exceeding %d mutepoint(s)", user.getName(),
+						Util.durationToString(punishment.length.duration), punishment.threshold));
 
-		if (userOpt.isPresent()) {
-			for (Player pl : server.getOnlinePlayers()) {
-				Text message = Util.withWatermark(TextColors.RED,
-						String.format("%s has been muted for %s for exceeding %d mutepoint(s)", userOpt.get().getName(),
-								Util.durationToString(punishment.length.duration), punishment.threshold));
-				pl.sendMessage(message);
-			}
+		server.getConsole().sendMessage(message);
+
+		for (Player pl : server.getOnlinePlayers()) {
+			pl.sendMessage(message);
+		}
+
+		if (user.isOnline()) {
+			user.getPlayer().get()
+					.sendMessage(Util.withWatermark(TextColors.RED,
+							String.format("You have been muted for %s for exceeding %d points",
+									Util.durationToString(punishment.length.duration), punishment.threshold)));
 		}
 	}
 }

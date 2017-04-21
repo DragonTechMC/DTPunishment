@@ -62,10 +62,13 @@ public class BanpointsPunishment {
 				.build();
 		service.addBan(ban);
 
+		Text message = Util.withWatermark(TextColors.RED,
+				String.format("%s has been banned for %s for exceeding %d banpoint(s)", user.getName(), durationText,
+						punishment.threshold));
+
+		server.getConsole().sendMessage(message);
+
 		for (Player pl : server.getOnlinePlayers()) {
-			Text message = Util.withWatermark(TextColors.RED,
-					String.format("%s has been banned for %s for exceeding %d banpoint(s)", user.getName(),
-							durationText, punishment.threshold));
 			pl.sendMessage(message);
 		}
 
