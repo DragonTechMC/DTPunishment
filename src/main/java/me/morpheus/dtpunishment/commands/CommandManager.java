@@ -158,7 +158,7 @@ public class CommandManager {
 						GenericArguments.user(Text.of("player")), "dtpunishment.playerinfo.others"))))
 				.executor(injector.getInstance(CommandPlayerInfo.class)).build();
 
-		CommandSpec.Builder builder = CommandSpec.builder().permission("dtpunishment.admin");
+		CommandSpec.Builder builder = CommandSpec.builder().permission("dtpunishment.dtp");
 		builder.description(Text.of("Admin commands for DTPunishment"));
 		builder.child(addWords, "addwords");
 		builder.child(removeWords, "removewords");
