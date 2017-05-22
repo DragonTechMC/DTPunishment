@@ -143,7 +143,7 @@ public class CommandManager {
 				.arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))))
 				.executor(injector.getInstance(CommandUnmute.class)).build();
 
-		CommandSpec lastOffence = CommandSpec.builder().permission("dtpunishment.admin.bannedwords")
+		CommandSpec lastOffence = CommandSpec.builder().permission("dtpunishment.admin.lastoffence")
 				.description(Text.of("Shows a player's most recent offence"))
 				.arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))))
 				.executor(injector.getInstance(CommandLastOffence.class)).build();
