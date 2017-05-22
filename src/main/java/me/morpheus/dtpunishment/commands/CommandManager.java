@@ -124,17 +124,17 @@ public class CommandManager {
 
 	private void registerAdminCommands() {
 
-		CommandSpec addWords = CommandSpec.builder().permission("dtpunishment.admin.bannedwords")
+		CommandSpec addWords = CommandSpec.builder().permission("dtpunishment.admin.addwords")
 				.description(Text.of("Add a word or words to the list of banned ones"))
 				.arguments(GenericArguments.allOf(GenericArguments.string(Text.of("word"))))
 				.executor(injector.getInstance(CommandWordAdd.class)).build();
 
-		CommandSpec removeWords = CommandSpec.builder().permission("dtpunishment.admin.bannedwords")
+		CommandSpec removeWords = CommandSpec.builder().permission("dtpunishment.admin.removewords")
 				.description(Text.of("Remove a word from the list of banned ones"))
 				.arguments(GenericArguments.allOf(GenericArguments.string(Text.of("word"))))
 				.executor(injector.getInstance(CommandWordRemove.class)).build();
 
-		CommandSpec listWords = CommandSpec.builder().permission("dtpunishment.admin.bannedwords")
+		CommandSpec listWords = CommandSpec.builder().permission("dtpunishment.admin.listwords")
 				.description(Text.of("List all banned words")).executor(injector.getInstance(CommandWordList.class))
 				.build();
 
