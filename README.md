@@ -23,10 +23,6 @@ Simply drop the `.jar` into your `mods` directory on your server and restart the
 
 Configuration files will automatically be created in the `config` directory. You can edit these and use `/dtp reload` in the console to reload the configuration whilst your server is running.
 
-## Permissions
-
-For a full list of permissions required for each command, check the [Wiki](https://github.com/DragonTechMC/DTPunishment/wiki)
-
 ## Licence/ Permissions
 
 * You may not download and redistrubute this plugin without permission.
