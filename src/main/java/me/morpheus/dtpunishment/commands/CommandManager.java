@@ -107,7 +107,7 @@ public class CommandManager {
 						GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
 				.executor(injector.getInstance(CommandMutepointsAdd.class)).build();
 
-		CommandSpec removeMutepoints = CommandSpec.builder().permission("dtpunishment.mutepoints.add")
+		CommandSpec removeMutepoints = CommandSpec.builder().permission("dtpunishment.mutepoints.remove")
 				.description(Text.of("Add a specified amount of Mutepoints to a player "))
 				.arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))),
 						GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
