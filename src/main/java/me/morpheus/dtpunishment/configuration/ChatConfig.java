@@ -38,7 +38,7 @@ public class ChatConfig {
 		@Setting(comment = "number of mutepoints a user receives for saying a banned word")
 		public int mutepoints = 4;
 
-		@Setting(comment = "list of words that are banned on the server - e.g. ['naughty', 'words', 'go', 'here']")
+		@Setting(comment = "list of words that are banned on the server - e.g. ["naughty", "words", "go", "here"]")
 		public List<String> words = new ArrayList<String>();
 	}
 
