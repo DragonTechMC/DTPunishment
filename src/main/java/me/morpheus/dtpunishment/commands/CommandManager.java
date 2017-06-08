@@ -107,7 +107,7 @@ public class CommandManager {
 						GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
 				.executor(injector.getInstance(CommandMutepointsAdd.class)).build();
 
-		CommandSpec removeMutepoints = CommandSpec.builder().permission("dtpunishment.mutepoints.add")
+		CommandSpec removeMutepoints = CommandSpec.builder().permission("dtpunishment.mutepoints.remove")
 				.description(Text.of("Add a specified amount of Mutepoints to a player "))
 				.arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))),
 						GenericArguments.onlyOne(GenericArguments.integer(Text.of("amount"))))
@@ -124,17 +124,17 @@ public class CommandManager {
 
 	private void registerAdminCommands() {
 
-		CommandSpec addWords = CommandSpec.builder().permission("dtpunishment.admin.bannedwords")
+		CommandSpec addWords = CommandSpec.builder().permission("dtpunishment.admin.addwords")
 				.description(Text.of("Add a word or words to the list of banned ones"))
 				.arguments(GenericArguments.allOf(GenericArguments.string(Text.of("word"))))
 				.executor(injector.getInstance(CommandWordAdd.class)).build();
 
-		CommandSpec removeWords = CommandSpec.builder().permission("dtpunishment.admin.bannedwords")
+		CommandSpec removeWords = CommandSpec.builder().permission("dtpunishment.admin.removewords")
 				.description(Text.of("Remove a word from the list of banned ones"))
 				.arguments(GenericArguments.allOf(GenericArguments.string(Text.of("word"))))
 				.executor(injector.getInstance(CommandWordRemove.class)).build();
 
-		CommandSpec listWords = CommandSpec.builder().permission("dtpunishment.admin.bannedwords")
+		CommandSpec listWords = CommandSpec.builder().permission("dtpunishment.admin.listwords")
 				.description(Text.of("List all banned words")).executor(injector.getInstance(CommandWordList.class))
 				.build();
 
@@ -143,7 +143,7 @@ public class CommandManager {
 				.arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))))
 				.executor(injector.getInstance(CommandUnmute.class)).build();
 
-		CommandSpec lastOffence = CommandSpec.builder().permission("dtpunishment.admin.bannedwords")
+		CommandSpec lastOffence = CommandSpec.builder().permission("dtpunishment.admin.lastoffence")
 				.description(Text.of("Shows a player's most recent offence"))
 				.arguments(GenericArguments.onlyOne(GenericArguments.user(Text.of("player"))))
 				.executor(injector.getInstance(CommandLastOffence.class)).build();
@@ -158,7 +158,7 @@ public class CommandManager {
 						GenericArguments.user(Text.of("player")), "dtpunishment.playerinfo.others"))))
 				.executor(injector.getInstance(CommandPlayerInfo.class)).build();
 
-		CommandSpec.Builder builder = CommandSpec.builder().permission("dtpunishment.admin");
+		CommandSpec.Builder builder = CommandSpec.builder().permission("dtpunishment.dtp");
 		builder.description(Text.of("Admin commands for DTPunishment"));
 		builder.child(addWords, "addwords");
 		builder.child(removeWords, "removewords");

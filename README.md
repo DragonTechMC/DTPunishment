@@ -4,7 +4,6 @@
 
 A unique punishment plugin made for DragonTechMC
 
-**Do not use without permission**
 
 ## What does it do?
 
@@ -24,6 +23,12 @@ Simply drop the `.jar` into your `mods` directory on your server and restart the
 
 Configuration files will automatically be created in the `config` directory. You can edit these and use `/dtp reload` in the console to reload the configuration whilst your server is running.
 
-## Permissions
+## Licence/ Permissions
 
-For a full list of permissions required for each command, check the [Wiki](https://github.com/DragonTechMC/DTPunishment/wiki)
+* You may not download and redistrubute this plugin without permission.
+* You may not claim ownership of this plugin or any of it's code.
+* You may download and use this plugin on your public server if a link to this Github is available on your website.
+* You may fork this plugin with the intention to create improvements which must then be submitted via pull request.
+* You may not fork this plugin with the intention to change it and make it your own.
+
+All Rights Reserved.
