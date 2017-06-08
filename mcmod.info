@@ -2,7 +2,7 @@
     {
         "modid": "DTPunishment",
         "name": "DragonTech Punishment",
-        "version": "0.9.5",
+        "version": "0.9.6",
         "description": "A chat filter/punishment plugin",
         "url": "http://www.dragontechmc.com",
         "authorList": [
