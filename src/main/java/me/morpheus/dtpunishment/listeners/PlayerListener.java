@@ -148,6 +148,16 @@ public class PlayerListener {
 					" mutepoint(s) have been added automatically, you now have ", dataStore.getMutepoints(uuid),
 					". If you believe this is an error, contact a staff member."));
 
+			for (Player p : server.getOnlinePlayers()) {
+				if (p.hasPermission("dtpunishment.staff.notify")) {
+					p.sendMessage(Util.withWatermark(TextColors.RED,
+							String.format(
+									"%s has character spammed; %d"
+											+ " mutepoint(s) have been added automatically, they now have %d",
+									player.getName(), points, dataStore.getMutepoints(uuid))));
+				}
+			}
+			
 			logger.info("[Message cancelled (character spam)] - " + event.getMessage().toPlain());
 
 			chatOffenceData.trackLastOffence(player.getUniqueId(), message, "character spam", points);
