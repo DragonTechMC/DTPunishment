@@ -16,8 +16,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import me.morpheus.dtpunishment.configuration.ChatConfig;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
 
-@Singleton
 public class WordChecker {
 
 	private ChatConfig chatConfig;
@@ -30,10 +31,8 @@ public class WordChecker {
 
 	private Pattern characterSpamRegexPattern;
 
-	@Inject
-	public WordChecker(ChatConfig chatConfig) {
-		this.chatConfig = chatConfig;
-
+	public WordChecker() {
+		this.chatConfig = DTPunishment.getChatConfig();
 		updateFromConfiguration();
 	}
 
@@ -102,8 +101,8 @@ public class WordChecker {
 		int total = 0;
 
 		for (String word : words) {
+            if (Sponge.getServer().getPlayer(word).isPresent()) continue;
 			String cleaned = word.replaceAll("[\\W]", "");
-
 			total += cleaned.length();
 
 			if (StringUtils.isAllLowerCase(cleaned))

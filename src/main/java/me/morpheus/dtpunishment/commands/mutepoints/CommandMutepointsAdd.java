@@ -2,7 +2,9 @@ package me.morpheus.dtpunishment.commands.mutepoints;
 
 import java.util.UUID;
 
+import me.morpheus.dtpunishment.DTPunishment;
 import org.spongepowered.api.Server;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -22,19 +24,6 @@ import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandMutepointsAdd implements CommandExecutor {
 
-	private DataStore dataStore;
-
-	private MutepointsPunishment mutePunish;
-
-	private Server server;
-
-	@Inject
-	public CommandMutepointsAdd(DataStore dataStore, MutepointsPunishment mutePunish, Server server) {
-		this.dataStore = dataStore;
-		this.mutePunish = mutePunish;
-		this.server = server;
-	}
-
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 		User user = args.<User>getOne("player").get();
@@ -42,6 +31,7 @@ public class CommandMutepointsAdd implements CommandExecutor {
 		String name = user.getName();
 		int amount = args.<Integer>getOne("amount").get();
 
+		DataStore dataStore = DTPunishment.getDataStore();
 		dataStore.addMutepoints(uuid, amount);
 
 		int total = dataStore.getMutepoints(uuid);
@@ -57,13 +47,13 @@ public class CommandMutepointsAdd implements CommandExecutor {
 		if (src instanceof ConsoleSource)
 			src.sendMessage(adminMessage);
 
-		for (Player p : server.getOnlinePlayers()) {
+		for (Player p : Sponge.getServer().getOnlinePlayers()) {
 			if (p.hasPermission("dtpunishment.staff.notify") || p == src) {
 				p.sendMessage(adminMessage);
 			}
 		}
 
-		mutePunish.check(uuid, total);
+		MutepointsPunishment.check(uuid, total);
 
 		return CommandResult.success();
 

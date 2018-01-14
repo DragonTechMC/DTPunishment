@@ -1,6 +1,6 @@
 plugins {
     id 'org.spongepowered.plugin' version '0.8.1'
-    id 'com.qixalite.spongestart' version '1.6.2'
+    id 'com.qixalite.spongestart2' version '3.0.1'
     id 'java'
 }
 
@@ -17,12 +17,11 @@ repositories {
 }
 
 spongestart {
-    eula true
-    spongeForgeVersion '1.10.2-2221-5.2.0-BETA-2223'
+    minecraft '1.12.2'
 }
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:5.2.0-SNAPSHOT'
+    compile 'org.spongepowered:spongeapi:7.1.0-SNAPSHOT'
     testCompile 'junit:junit:4.12'
     testCompile 'org.powermock:powermock-module-junit4:1.6.6'
     testCompile 'org.powermock:powermock-api-mockito:1.6.6'

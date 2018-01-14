@@ -9,31 +9,30 @@ import com.google.inject.Singleton;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
-@Singleton
 @ConfigSerializable
 public class MainConfig {
-	public static final TypeToken<MainConfig> TYPE = TypeToken.of(MainConfig.class);
+
+	@Setting(comment = "if we should use a custom data directory, like /home/user/server/data/, If true, the path to the data dir should be" +
+            "defined in the \"customDataDirectory\" config field.")
+    public boolean useCustomDataDirectory = false;
+
+	@Setting(comment = "if using windows, use double \\ instead one.")
+    public String customDataDirectory = "";
 
 	@Setting
-	public Database database;
+	public Database database = new Database();
 
 	@Setting(comment = "aliases for all DTPunishment commands")
-	public Aliases aliases;
+	public Aliases aliases = new Aliases();
 
 	@Setting(comment = "these settings describe which punishments users incur when reaching a certain level of banpoints/mutepoints")
-	public Punishments punishments;
-
-	public MainConfig() {
-		database = new MainConfig.Database();
-		punishments = new MainConfig.Punishments();
-		aliases = new MainConfig.Aliases();
-	}
+	public Punishments punishments = new Punishments();
 
 	@ConfigSerializable
 	public static class Database {
 
 		@Setting(comment = "Use MySQL database store instead of config file based storage")
-		public Boolean enabled = false;
+		public boolean enabled = false;
 
 		@Setting
 		public String name;

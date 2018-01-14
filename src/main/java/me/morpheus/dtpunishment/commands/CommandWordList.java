@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
+import me.morpheus.dtpunishment.DTPunishment;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -20,12 +21,7 @@ import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandWordList implements CommandExecutor {
 
-	private ChatConfig chatConfig;
-
-	@Inject
-	public CommandWordList(ChatConfig chatConfig) {
-		this.chatConfig = chatConfig;
-	}
+	private ChatConfig chatConfig = DTPunishment.getChatConfig();
 
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {

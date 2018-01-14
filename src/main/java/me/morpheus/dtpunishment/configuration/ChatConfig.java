@@ -2,44 +2,50 @@ package me.morpheus.dtpunishment.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Singleton;
 
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
-@Singleton
 @ConfigSerializable
 public class ChatConfig {
 
-	public static final TypeToken<ChatConfig> TYPE = TypeToken.of(ChatConfig.class);
-
 	@Setting(comment = "settings governing banned words and their punishments")
-	public Banned banned;
+	public Banned banned = new Banned();
 
 	@Setting(comment = "settings governing SHOUTING IN CAPS and its punishments")
-	public Caps caps;
+	public Caps caps = new Caps();
 
 	@Setting(comment = "settings governing spamming spamming spamming and its punishments")
-	public Spam spam;
+	public Spam spam = new Spam();
 
 	@Setting(comment = "settings governing spamming the same character oooooooooover and oooooooooooooover")
-	public CharacterSpam characterspam;
-
-	public ChatConfig() {
-		banned = new ChatConfig.Banned();
-		caps = new ChatConfig.Caps();
-		spam = new ChatConfig.Spam();
-		characterspam = new ChatConfig.CharacterSpam();
-	}
+	public CharacterSpam characterspam = new CharacterSpam();
 
 	@ConfigSerializable
 	public static class Banned {
+
+	    public Banned() {
+            replacer.put("bitch", "cute");
+        }
+
 		@Setting(comment = "number of mutepoints a user receives for saying a banned word")
 		public int mutepoints = 4;
 
 		@Setting(comment = "list of words that are banned on the server - e.g. [naughty, words, go, here]")
 		public List<String> words = new ArrayList<String>();
+
+		@Setting(comment = "if we should replace the banned words with ****. if true, the message will be sent but with" +
+                "stars (****) instead of the word. if false, the messagr will be cancelled at all")
+        public boolean starBadWords = false;
+
+        @Setting(comment = "the replacer for words. Words that are here (key) will be replaced with its respective value\n" +
+                "when someone sends a message with them. Words here MUST be in the words list above too. This takes priority over starring bad words.")
+        public Map<String, String> replacer = Maps.newHashMap();
 	}
 
 	@ConfigSerializable

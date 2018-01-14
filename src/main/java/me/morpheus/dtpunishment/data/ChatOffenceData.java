@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import com.google.inject.Singleton;
 
-@Singleton
 public class ChatOffenceData {
 
 	private Map<UUID, OffenceDetail> lastOffence;

@@ -1,10 +1,13 @@
 package me.morpheus.dtpunishment.commands;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import me.morpheus.dtpunishment.DTPunishment;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -29,16 +32,14 @@ public class CommandWordRemove implements CommandExecutor {
 
 	private ChatConfig chatConfig;
 
-	private Path configDir;
+	private File configDir;
 
 	private WordChecker wordChecker;
 
-	@Inject
-	public CommandWordRemove(ChatConfig chatConfig, @ConfigDir(sharedRoot = false) Path configDir,
-			WordChecker wordChecker) {
-		this.chatConfig = chatConfig;
-		this.configDir = configDir;
-		this.wordChecker = wordChecker;
+	public CommandWordRemove() {
+		this.chatConfig = DTPunishment.getChatConfig();
+		this.configDir = DTPunishment.getInstance().configDir;
+		this.wordChecker = DTPunishment.getWordChecker();
 	}
 
 	@Override
@@ -66,9 +67,8 @@ public class CommandWordRemove implements CommandExecutor {
 		}
 
 		// TODO: start - this should all be done via configuration manager
-		Path chatData = configDir.resolve("chat.conf");
-
-		ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(chatData)
+		File chatData = new File(configDir, "chat.conf");
+		ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setFile(chatData)
 				.build();
 		ConfigurationNode chatNode;
 
@@ -80,6 +80,7 @@ public class CommandWordRemove implements CommandExecutor {
 			chatNode = loader.load();
 			chatNode.getNode("banned", "words").setValue(token, actual);
 			loader.save(chatNode);
+            DTPunishment.getInstance().onReload(null);
 		} catch (IOException | ObjectMappingException e) {
 			e.printStackTrace();
 		}

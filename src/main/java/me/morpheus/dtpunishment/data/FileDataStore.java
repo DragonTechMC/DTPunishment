@@ -1,5 +1,6 @@
 package me.morpheus.dtpunishment.data;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import me.morpheus.dtpunishment.DTPunishment;
 import org.slf4j.Logger;
 import org.spongepowered.api.config.ConfigDir;
 
@@ -19,16 +21,15 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 public class FileDataStore implements DataStore {
 
-	@Inject
-	private Logger logger;
-
-	@Inject
-	@ConfigDir(sharedRoot = false)
-	private Path configDir;
-
 	private ConfigurationLoader<CommentedConfigurationNode> loader;
-
 	private ConfigurationNode node;
+	private File configDir;
+	private File dataFolder;
+
+	public FileDataStore() {
+	    this.configDir = DTPunishment.getInstance().configDir;
+	    this.dataFolder = DTPunishment.getDataDirectory();
+    }
 
 	private void save() {
 		try {
@@ -40,14 +41,8 @@ public class FileDataStore implements DataStore {
 
 	private void initPlayerConfig(UUID player) {
 		try {
-			Path dataDir = configDir.resolve("data");
-
-			if (!dataDir.toFile().exists()) {
-				Files.createDirectory(dataDir);
-			}
-
-			Path playerData = configDir.resolve(String.format("data/%s.conf", player));
-			loader = HoconConfigurationLoader.builder().setPath(playerData).build();
+			File playerData = new File(this.dataFolder, player + ".conf");
+			loader = HoconConfigurationLoader.builder().setFile(playerData).build();
 			node = loader.load();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -56,16 +51,6 @@ public class FileDataStore implements DataStore {
 
 	@Override
 	public void init() {
-		Path dataFolder = configDir.resolve("data");
-		if (Files.exists(dataFolder)) {
-			logger.info("Data folder found");
-		} else {
-			try {
-				Files.createDirectories(dataFolder);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 	@Override
@@ -169,10 +154,9 @@ public class FileDataStore implements DataStore {
 
 	@Override
 	public void createUser(UUID player) {
-		Path playerData = configDir.resolve(String.format("data/%s.conf", player));
-
+	    File playerData = new File(this.dataFolder, player + ".conf");
 		try {
-			Files.createFile(playerData);
+            if (!playerData.exists()) playerData.createNewFile();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -188,7 +172,7 @@ public class FileDataStore implements DataStore {
 
 	@Override
 	public boolean userExists(UUID player) {
-		Path playerData = configDir.resolve(String.format("data/%s.conf", player));
-		return Files.exists(playerData);
+        File playerData = new File(this.dataFolder, player + ".conf");
+		return playerData.exists();
 	}
 }

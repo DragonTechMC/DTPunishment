@@ -3,6 +3,7 @@ package me.morpheus.dtpunishment.commands;
 import java.util.Optional;
 import java.util.UUID;
 
+import me.morpheus.dtpunishment.DTPunishment;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -19,9 +20,8 @@ public class CommandPlayerInfo implements CommandExecutor {
 
 	private DataStore dataStore;
 
-	@Inject
-	private CommandPlayerInfo(DataStore dataStore) {
-		this.dataStore = dataStore;
+	public CommandPlayerInfo() {
+		this.dataStore = DTPunishment.getDataStore();
 	}
 
 	@Override

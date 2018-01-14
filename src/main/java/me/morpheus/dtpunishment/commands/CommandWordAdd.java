@@ -1,10 +1,13 @@
 package me.morpheus.dtpunishment.commands;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import me.morpheus.dtpunishment.DTPunishment;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -27,19 +30,11 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
 public class CommandWordAdd implements CommandExecutor {
 
-	private ChatConfig chatConfig;
+	private ChatConfig chatConfig = DTPunishment.getChatConfig();
 
-	private Path configDir;
+	private File configDir = DTPunishment.getInstance().configDir;
 
-	private WordChecker wordChecker;
-
-	@Inject
-	public CommandWordAdd(ChatConfig chatConfig, @ConfigDir(sharedRoot = false) Path configDir,
-			WordChecker wordChecker) {
-		this.chatConfig = chatConfig;
-		this.configDir = configDir;
-		this.wordChecker = wordChecker;
-	}
+	private WordChecker wordChecker = DTPunishment.getWordChecker();
 
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
@@ -66,9 +61,9 @@ public class CommandWordAdd implements CommandExecutor {
 		}
 
 		// TODO: start - this should all be done via configuration manager
-		Path chatData = configDir.resolve("chat.conf");
+		File chatData = new File(configDir, "chat.conf");
 
-		ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(chatData)
+		ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setFile(chatData)
 				.build();
 		ConfigurationNode chatNode;
 

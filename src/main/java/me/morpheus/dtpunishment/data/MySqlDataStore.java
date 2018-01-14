@@ -10,7 +10,9 @@ import java.util.UUID;
 
 import javax.sql.DataSource;
 
+import me.morpheus.dtpunishment.DTPunishment;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.property.DirectionRelativePropertyHolder;
 import org.spongepowered.api.service.sql.SqlService;
 
 import com.google.inject.Inject;
@@ -19,10 +21,12 @@ import me.morpheus.dtpunishment.configuration.MainConfig;
 
 public class MySqlDataStore implements DataStore {
 
-    @Inject
+    private SqlService sql;
     private MainConfig mainConfig;
 
-    private SqlService sql;
+    public MySqlDataStore() {
+        this.mainConfig = DTPunishment.getConfig();
+    }
 
     private DataSource getDataSource(String jdbcUrl) throws SQLException {
         if (!Optional.ofNullable(sql).isPresent())

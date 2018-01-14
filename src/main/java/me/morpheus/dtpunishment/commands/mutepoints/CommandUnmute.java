@@ -2,7 +2,9 @@ package me.morpheus.dtpunishment.commands.mutepoints;
 
 import java.util.Optional;
 
+import me.morpheus.dtpunishment.DTPunishment;
 import org.spongepowered.api.Server;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -21,15 +23,7 @@ import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandUnmute implements CommandExecutor {
 
-	private DataStore dataStore;
-
-	private Server server;
-
-	@Inject
-	public CommandUnmute(DataStore dataStore, Server server) {
-		this.dataStore = dataStore;
-		this.server = server;
-	}
+	private DataStore dataStore = DTPunishment.getDataStore();
 
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
@@ -51,7 +45,7 @@ public class CommandUnmute implements CommandExecutor {
 			player.get().sendMessage(notification);
 		}
 
-		for (Player p : server.getOnlinePlayers()) {
+		for (Player p : Sponge.getServer().getOnlinePlayers()) {
 			if (p.hasPermission("dtpunishment.staff.notify") || p.getPlayer().get() == src) {
 				p.sendMessage(notification);
 			}

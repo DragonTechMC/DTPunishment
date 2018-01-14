@@ -1,5 +1,6 @@
 package me.morpheus.dtpunishment.commands;
 
+import me.morpheus.dtpunishment.DTPunishment;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -16,12 +17,7 @@ import me.morpheus.dtpunishment.utils.Util;
 
 public class CommandLastOffence implements CommandExecutor {
 
-	private ChatOffenceData chatOffenceData;
-
-	@Inject
-	public CommandLastOffence(ChatOffenceData chatOffenceData) {
-		this.chatOffenceData = chatOffenceData;
-	}
+	private ChatOffenceData chatOffenceData = DTPunishment.getOffenceData();
 
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
