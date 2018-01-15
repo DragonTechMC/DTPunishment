@@ -10,7 +10,7 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 public class Messages {
 
     @Setting
-    public String PREFIX = "&6[DTP]";
+    public String PREFIX = "[DTP] ";
 
     @Setting
     public String USERNAME_HAS_BANNED_WORDS = "You cannot join the server because your username contains a banned word (%s)";
