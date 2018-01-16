@@ -99,6 +99,7 @@ public class DTPunishment {
     public void onReload(GameReloadEvent e) {
 	    this.mainConfig.load();
 	    this.chatConfig.load();
+	    this.messages.load();
     }
 
 	public static DTPunishment getInstance() {

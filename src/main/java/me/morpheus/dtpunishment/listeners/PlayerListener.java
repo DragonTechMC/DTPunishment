@@ -91,6 +91,8 @@ public class PlayerListener {
 		String message = event.getRawMessage().toPlain();
 		UUID uuid = player.getUniqueId();
 		int mutePointsIncurred = 0;
+        if (!event.getChannel().isPresent() || !event.getChannel().get().getClass().getName().startsWith("org.spongepowered.api.text.channel.MessageChannel"))
+            return;
 
 		if (dataStore.isMuted(uuid)) {
 			Instant expiration = dataStore.getExpiration(uuid);

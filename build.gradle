@@ -18,6 +18,7 @@ repositories {
 
 spongestart {
     minecraft '1.12.2'
+    spongeVanilla '1.12.2-7.1.0-BETA-9'
 }
 
 dependencies {
