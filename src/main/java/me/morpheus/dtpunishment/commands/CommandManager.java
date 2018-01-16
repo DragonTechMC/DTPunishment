@@ -161,7 +161,7 @@ public class CommandManager {
 		builder.child(reloadConfig, "reloadconfig");
 		builder.child(lastOffence, "lastoffence");
 		builder.child(unmute, "unmute");
-		builder.child(playerInfo, "playerinfo, pinfo");
+		builder.child(playerInfo, "playerinfo", "pinfo");
 
 		tryRegisterCommand(builder.build(), mainConfig.aliases.admin);
 	}
