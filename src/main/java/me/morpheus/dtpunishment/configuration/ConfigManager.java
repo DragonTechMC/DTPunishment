@@ -7,6 +7,7 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.GuiceObjectMapperFactory;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -42,7 +43,7 @@ public class ConfigManager<T> {
             if (!c.exists()) c.createNewFile();
             this.loader = HoconConfigurationLoader.builder().setFile(c).build();
             config = loader.load(ConfigurationOptions.defaults()
-                    .setObjectMapperFactory(mapper)
+                    .setSerializers(TypeSerializers.newCollection().registerType(TypeToken.of(PunishmentLength.class), new PunishmentLengthSerializer()))
                     .setShouldCopyDefaults(true));
             node = config.getValue(TypeToken.of(configInstance), configInstance.newInstance());
             loader.save(config);
